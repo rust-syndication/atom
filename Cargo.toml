@@ -1,0 +1,6 @@
+[package]
+name = "atom_syndication"
+version = "0.1.0"
+authors = ["James Hurst <jh.jameshurst@gmail.com>"]
+
+[dependencies]
