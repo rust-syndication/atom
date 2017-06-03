@@ -1,0 +1,5 @@
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<entry>
+		<content type="text"><![CDATA[&lt;p&gt;Entry content&lt;/p&gt;]]></content>
+	</entry>
+</feed>

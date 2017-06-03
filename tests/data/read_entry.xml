@@ -1,0 +1,27 @@
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<entry>
+		<title>Entry Title</title>
+		<id>http://example.com/article/1</id>
+		<updated>2017-06-03T15:15:44-05:00</updated>
+		<author>
+			<name>John Doe</name>
+		</author>
+		<author>
+			<name>Jane Doe</name>
+		</author>
+		<category term="technology" />
+		<category term="podcast" />
+		<contributor>
+			<name>John Doe</name>
+		</contributor>
+		<contributor>
+			<name>Jane Doe</name>
+		</contributor>
+		<link rel="alternate" href="http://example.com/article/" />
+		<link rel="enclosure" type="audio/mpeg" length="1000" href="http://example.com/audio.mp3" />
+		<published>2017-06-01T15:15:44-05:00</published>
+		<summary>Entry summary</summary>
+		<rights>© 2017 John Doe</rights>
+		<content>Entry content</content>
+	</entry>
+</feed>

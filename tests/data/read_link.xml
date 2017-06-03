@@ -1,0 +1,3 @@
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<link rel="enclosure" hreflang="en" type="audio/mpeg" title="audio" length="1000" href="http://example.com/audio.mp3" />
+</feed>

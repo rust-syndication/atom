@@ -1,0 +1,3 @@
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<category term="technology" scheme="http://example.com/scheme" label="Technology" />
+</feed>
