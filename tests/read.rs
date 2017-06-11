@@ -15,7 +15,7 @@ macro_rules! feed {
 
 #[test]
 fn read_feed() {
-    let feed = feed!("tests/data/read_feed.xml");
+    let feed = feed!("tests/data/feed.xml");
     assert_eq!(feed.title(), "Feed Title");
     assert_eq!(feed.id(), "urn:uuid:60a76c80-d399-11d9-b91C-0003939e0af6");
     assert_eq!(feed.updated(), "2017-06-03T15:15:44-05:00");
@@ -32,7 +32,7 @@ fn read_feed() {
 
 #[test]
 fn read_entry() {
-    let feed = feed!("tests/data/read_entry.xml");
+    let feed = feed!("tests/data/entry.xml");
     assert_eq!(feed.entries().len(), 1);
 
     let entry = feed.entries().first().unwrap();
@@ -53,7 +53,7 @@ fn read_entry() {
 
 #[test]
 fn read_category() {
-    let feed = feed!("tests/data/read_category.xml");
+    let feed = feed!("tests/data/category.xml");
     let category = feed.categories().first().unwrap();
     assert_eq!(category.term(), "technology");
     assert_eq!(category.scheme(), Some("http://example.com/scheme"));
@@ -62,7 +62,7 @@ fn read_category() {
 
 #[test]
 fn read_generator() {
-    let feed = feed!("tests/data/read_generator.xml");
+    let feed = feed!("tests/data/generator.xml");
     let generator = feed.generator().unwrap();
     assert_eq!(generator.value(), "Example Generator");
     assert_eq!(generator.uri(), Some("http://example.com/generator"));
@@ -71,7 +71,7 @@ fn read_generator() {
 
 #[test]
 fn read_link() {
-    let feed = feed!("tests/data/read_link.xml");
+    let feed = feed!("tests/data/link.xml");
     let link = feed.links().first().unwrap();
     assert_eq!(link.rel(), "enclosure");
     assert_eq!(link.href(), "http://example.com/audio.mp3");
@@ -83,7 +83,7 @@ fn read_link() {
 
 #[test]
 fn read_person() {
-    let feed = feed!("tests/data/read_person.xml");
+    let feed = feed!("tests/data/person.xml");
     let person = feed.authors().first().unwrap();
     assert_eq!(person.name(), "John Doe");
     assert_eq!(person.email(), Some("johndoe@example.com"));
@@ -92,7 +92,7 @@ fn read_person() {
 
 #[test]
 fn read_source() {
-    let feed = feed!("tests/data/read_source.xml");
+    let feed = feed!("tests/data/source.xml");
 
     let entry = feed.entries().first().unwrap();
     assert!(entry.source().is_some());

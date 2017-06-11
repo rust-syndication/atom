@@ -1,8 +1,10 @@
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 
-use quick_xml::events::Event;
+use quick_xml::errors::Error as XmlError;
+use quick_xml::events::{Event, BytesStart, BytesEnd};
 use quick_xml::events::attributes::Attributes;
 use quick_xml::reader::Reader;
+use quick_xml::writer::Writer;
 
 use category::Category;
 use error::Error;
@@ -10,6 +12,7 @@ use fromxml::FromXml;
 use generator::Generator;
 use link::Link;
 use person::Person;
+use toxml::{ToXml, WriterExt};
 use util::atom_text;
 
 /// Represents the source of an Atom entry
@@ -467,5 +470,46 @@ impl FromXml for Source {
         }
 
         Ok(source)
+    }
+}
+
+impl ToXml for Source {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+        let name = b"source";
+        writer
+            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_text_element(b"title", &*self.title)?;
+        writer.write_text_element(b"id", &*self.id)?;
+        writer.write_text_element(b"updated", &*self.updated)?;
+        writer.write_objects_named(&self.authors, "author")?;
+        writer.write_objects(&self.categories)?;
+        writer
+            .write_objects_named(&self.contributors, "contributor")?;
+
+        if let Some(ref generator) = self.generator {
+            writer.write_object(generator)?;
+        }
+
+        if let Some(ref icon) = self.icon {
+            writer.write_text_element(b"icon", &**icon)?;
+        }
+
+        writer.write_objects(&self.links)?;
+
+        if let Some(ref logo) = self.logo {
+            writer.write_text_element(b"logo", &**logo)?;
+        }
+
+        if let Some(ref rights) = self.rights {
+            writer.write_text_element(b"rights", &**rights)?;
+        }
+
+        if let Some(ref subtitle) = self.subtitle {
+            writer.write_text_element(b"subtitle", &**subtitle)?;
+        }
+
+        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+
+        Ok(())
     }
 }

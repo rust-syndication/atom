@@ -1,8 +1,10 @@
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 
-use quick_xml::events::Event;
+use quick_xml::errors::Error as XmlError;
+use quick_xml::events::{Event, BytesStart, BytesEnd};
 use quick_xml::events::attributes::Attributes;
 use quick_xml::reader::Reader;
+use quick_xml::writer::Writer;
 
 use category::Category;
 use content::Content;
@@ -11,6 +13,7 @@ use fromxml::FromXml;
 use link::Link;
 use person::Person;
 use source::Source;
+use toxml::{ToXml, WriterExt};
 use util::atom_text;
 
 /// Represents an entry in an Atom feed
@@ -32,12 +35,12 @@ pub struct Entry {
     links: Vec<Link>,
     /// The time of the initial creation or first availability of the entry.
     published: Option<String>,
+    /// Information about rights held in and over the entry.
+    rights: Option<String>,
     /// The source information if an entry is copied from one feed into another feed.
     source: Option<Source>,
     /// A short summary, abstract, or excerpt of the entry.
     summary: Option<String>,
-    /// Information about rights held in and over the entry.
-    rights: Option<String>,
     /// Contains or links to the complete content of the entry.
     content: Option<Content>,
 }
@@ -291,6 +294,37 @@ impl Entry {
         self.published = published.into();
     }
 
+    /// Return the information about the rights held in and over this entry.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use atom_syndication::Entry;
+    ///
+    /// let mut entry = Entry::default();
+    /// entry.set_rights("© 2017 John Doe".to_string());
+    /// assert_eq!(entry.rights(), Some("© 2017 John Doe"));
+    /// ```
+    pub fn rights(&self) -> Option<&str> {
+        self.rights.as_ref().map(|s| s.as_str())
+    }
+
+    /// Set the information about the rights held in and over this entry.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use atom_syndication::Entry;
+    ///
+    /// let mut entry = Entry::default();
+    /// entry.set_rights("© 2017 John Doe".to_string());
+    /// ```
+    pub fn set_rights<V>(&mut self, rights: V)
+        where V: Into<Option<String>>
+    {
+        self.rights = rights.into();
+    }
+
     /// Return the source of this entry if it was copied from another feed.
     ///
     /// # Examples
@@ -351,37 +385,6 @@ impl Entry {
         where V: Into<Option<String>>
     {
         self.summary = summary.into();
-    }
-
-    /// Return the information about the rights held in and over this entry.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use atom_syndication::Entry;
-    ///
-    /// let mut entry = Entry::default();
-    /// entry.set_rights("© 2017 John Doe".to_string());
-    /// assert_eq!(entry.rights(), Some("© 2017 John Doe"));
-    /// ```
-    pub fn rights(&self) -> Option<&str> {
-        self.rights.as_ref().map(|s| s.as_str())
-    }
-
-    /// Set the information about the rights held in and over this entry.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use atom_syndication::Entry;
-    ///
-    /// let mut entry = Entry::default();
-    /// entry.set_rights("© 2017 John Doe".to_string());
-    /// ```
-    pub fn set_rights<V>(&mut self, rights: V)
-        where V: Into<Option<String>>
-    {
-        self.rights = rights.into();
     }
 
     /// Return the content of this entry.
@@ -450,11 +453,11 @@ impl FromXml for Entry {
                                 .push(Link::from_xml(reader, element.attributes())?)
                         }
                         b"published" => entry.published = atom_text(reader)?,
+                        b"rights" => entry.rights = atom_text(reader)?,
                         b"source" => {
                             entry.source = Some(Source::from_xml(reader, element.attributes())?)
                         }
                         b"summary" => entry.summary = atom_text(reader)?,
-                        b"rights" => entry.rights = atom_text(reader)?,
                         b"content" => {
                             entry.content = Some(Content::from_xml(reader, element.attributes())?)
                         }
@@ -470,5 +473,45 @@ impl FromXml for Entry {
         }
 
         Ok(entry)
+    }
+}
+
+impl ToXml for Entry {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+        let name = b"entry";
+        writer
+            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_text_element(b"title", &*self.title)?;
+        writer.write_text_element(b"id", &*self.id)?;
+        writer.write_text_element(b"updated", &*self.updated)?;
+        writer.write_objects_named(&self.authors, "author")?;
+        writer.write_objects(&self.categories)?;
+        writer
+            .write_objects_named(&self.contributors, "contributor")?;
+        writer.write_objects(&self.links)?;
+
+        if let Some(ref published) = self.published {
+            writer.write_text_element(b"published", &**published)?;
+        }
+
+        if let Some(ref rights) = self.rights {
+            writer.write_text_element(b"rights", &**rights)?;
+        }
+
+        if let Some(ref source) = self.source {
+            writer.write_object(source)?;
+        }
+
+        if let Some(ref summary) = self.summary {
+            writer.write_text_element(b"summary", &**summary)?;
+        }
+
+        if let Some(ref content) = self.content {
+            writer.write_object(content)?;
+        }
+
+        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+
+        Ok(())
     }
 }

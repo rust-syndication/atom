@@ -1,10 +1,14 @@
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 
+use quick_xml::errors::Error as XmlError;
+use quick_xml::events::{Event, BytesStart};
 use quick_xml::events::attributes::Attributes;
 use quick_xml::reader::Reader;
+use quick_xml::writer::Writer;
 
 use error::Error;
 use fromxml::FromXml;
+use toxml::ToXml;
 
 /// Represents a link in an Atom feed
 #[derive(Debug, Clone, PartialEq)]
@@ -245,5 +249,34 @@ impl FromXml for Link {
         reader.read_to_end(b"link", &mut Vec::new())?;
 
         Ok(link)
+    }
+}
+
+impl ToXml for Link {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+        let name = b"link";
+        let mut element = BytesStart::borrowed(name, name.len());
+        element.push_attribute(("href", &*self.href));
+        element.push_attribute(("rel", &*self.rel));
+
+        if let Some(ref hreflang) = self.hreflang {
+            element.push_attribute(("hreflang", &**hreflang));
+        }
+
+        if let Some(ref mime_type) = self.mime_type {
+            element.push_attribute(("type", &**mime_type));
+        }
+
+        if let Some(ref title) = self.title {
+            element.push_attribute(("title", &**title));
+        }
+
+        if let Some(ref length) = self.length {
+            element.push_attribute(("length", &**length));
+        }
+
+        writer.write_event(Event::Empty(element))?;
+
+        Ok(())
     }
 }

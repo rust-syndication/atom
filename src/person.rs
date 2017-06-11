@@ -1,11 +1,14 @@
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 
+use quick_xml::errors::Error as XmlError;
+use quick_xml::events::{Event, BytesStart, BytesEnd};
 use quick_xml::events::attributes::Attributes;
-use quick_xml::events::Event;
 use quick_xml::reader::Reader;
+use quick_xml::writer::Writer;
 
 use error::Error;
 use fromxml::FromXml;
+use toxml::{ToXmlNamed, WriterExt};
 use util::atom_text;
 
 /// Represents a person in an Atom feed
@@ -138,5 +141,29 @@ impl FromXml for Person {
         }
 
         Ok(person)
+    }
+}
+
+impl ToXmlNamed for Person {
+    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), XmlError>
+        where W: Write,
+              N: AsRef<[u8]>
+    {
+        let name = name.as_ref();
+        writer
+            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_text_element(b"name", &*self.name)?;
+
+        if let Some(ref email) = self.email {
+            writer.write_text_element(b"email", &*email)?;
+        }
+
+        if let Some(ref uri) = self.uri {
+            writer.write_text_element(b"uri", &*uri)?;
+        }
+
+        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+
+        Ok(())
     }
 }

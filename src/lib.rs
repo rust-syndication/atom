@@ -17,6 +17,7 @@ mod source;
 
 mod error;
 mod fromxml;
+mod toxml;
 mod util;
 
 pub use feed::Feed;

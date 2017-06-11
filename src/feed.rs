@@ -1,9 +1,11 @@
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 use std::str::FromStr;
 
-use quick_xml::events::Event;
+use quick_xml::errors::Error as XmlError;
+use quick_xml::events::{Event, BytesStart, BytesEnd};
 use quick_xml::events::attributes::Attributes;
 use quick_xml::reader::Reader;
+use quick_xml::writer::Writer;
 
 use category::Category;
 use error::Error;
@@ -12,6 +14,7 @@ use fromxml::FromXml;
 use generator::Generator;
 use link::Link;
 use person::Person;
+use toxml::{ToXml, WriterExt};
 use util::atom_text;
 
 /// Represents an Atom feed
@@ -81,6 +84,26 @@ impl Feed {
         }
 
         Err(Error::Eof)
+    }
+
+    /// Attempt to write this Atom feed to a writer.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use std::io::BufReader;
+    /// use std::fs::File;
+    /// use atom_syndication::Feed;
+    ///
+    /// let file = File::open("example.xml").unwrap();
+    /// let feed = Feed::read_from(BufReader::new(file)).unwrap();
+    /// let out = File::create("out.xml").unwrap();
+    /// feed.write_to(out).unwrap();
+    /// ```
+    pub fn write_to<W: Write>(&self, writer: W) -> Result<W, Error> {
+        let mut writer = Writer::new(writer);
+        self.to_xml(&mut writer)?;
+        Ok(writer.into_inner())
     }
 
     /// Return the title of this feed.
@@ -496,8 +519,8 @@ impl FromXml for Feed {
             match reader.read_event(&mut buf)? {
                 Event::Start(element) => {
                     match element.name() {
-                        b"id" => feed.id = atom_text(reader)?.unwrap_or_default(),
                         b"title" => feed.title = atom_text(reader)?.unwrap_or_default(),
+                        b"id" => feed.id = atom_text(reader)?.unwrap_or_default(),
                         b"updated" => feed.updated = atom_text(reader)?.unwrap_or_default(),
                         b"author" => {
                             feed.authors
@@ -542,10 +565,61 @@ impl FromXml for Feed {
     }
 }
 
+impl ToXml for Feed {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+        let name = b"feed";
+        writer
+            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_text_element(b"title", &*self.title)?;
+        writer.write_text_element(b"id", &*self.id)?;
+        writer.write_text_element(b"updated", &*self.updated)?;
+        writer.write_objects_named(&self.authors, "author")?;
+        writer.write_objects(&self.categories)?;
+        writer
+            .write_objects_named(&self.contributors, "contributor")?;
+
+        if let Some(ref generator) = self.generator {
+            writer.write_object(generator)?;
+        }
+
+        if let Some(ref icon) = self.icon {
+            writer.write_text_element(b"icon", &**icon)?;
+        }
+
+        writer.write_objects(&self.links)?;
+
+        if let Some(ref logo) = self.logo {
+            writer.write_text_element(b"logo", &**logo)?;
+        }
+
+        if let Some(ref rights) = self.rights {
+            writer.write_text_element(b"rights", &**rights)?;
+        }
+
+        if let Some(ref subtitle) = self.subtitle {
+            writer.write_text_element(b"subtitle", &**subtitle)?;
+        }
+
+        writer.write_objects(&self.entries)?;
+        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+
+        Ok(())
+    }
+}
+
+
 impl FromStr for Feed {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Error> {
         Feed::read_from(s.as_bytes())
+    }
+}
+
+impl ToString for Feed {
+    fn to_string(&self) -> String {
+        let buf = self.write_to(Vec::new()).unwrap_or_default();
+        // this unwrap should be safe since the bytes written from the Feed are all valid utf8
+        String::from_utf8(buf).unwrap()
     }
 }

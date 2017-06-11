@@ -1,10 +1,14 @@
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 
+use quick_xml::errors::Error as XmlError;
+use quick_xml::events::{Event, BytesStart, BytesEnd, BytesText};
 use quick_xml::events::attributes::Attributes;
 use quick_xml::reader::Reader;
+use quick_xml::writer::Writer;
 
 use error::Error;
 use fromxml::FromXml;
+use toxml::ToXml;
 use util::atom_text;
 
 /// Represents the generator of an Atom feed
@@ -131,5 +135,27 @@ impl FromXml for Generator {
         generator.value = atom_text(reader)?.unwrap_or_default();
 
         Ok(generator)
+    }
+}
+
+impl ToXml for Generator {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+        let name = b"generator";
+        let mut element = BytesStart::borrowed(name, name.len());
+
+        if let Some(ref uri) = self.uri {
+            element.push_attribute(("uri", &**uri));
+        }
+
+        if let Some(ref version) = self.version {
+            element.push_attribute(("version", &**version));
+        }
+
+        writer.write_event(Event::Start(element))?;
+        writer
+            .write_event(Event::Text(BytesText::borrowed(self.value.as_bytes())))?;
+        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+
+        Ok(())
     }
 }

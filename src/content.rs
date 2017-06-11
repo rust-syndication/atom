@@ -1,10 +1,14 @@
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 
+use quick_xml::errors::Error as XmlError;
+use quick_xml::events::{Event, BytesStart, BytesEnd, BytesText};
 use quick_xml::events::attributes::Attributes;
 use quick_xml::reader::Reader;
+use quick_xml::writer::Writer;
 
 use error::Error;
 use fromxml::FromXml;
+use toxml::ToXml;
 use util::atom_text;
 
 /// Represents the content of an Atom entry
@@ -136,5 +140,35 @@ impl FromXml for Content {
         content.value = atom_text(reader)?;
 
         Ok(content)
+    }
+}
+
+impl ToXml for Content {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+        let name = b"content";
+        let mut element = BytesStart::borrowed(name, name.len());
+
+        if let Some(ref content_type) = self.content_type {
+            if content_type == "xhtml" {
+                element.push_attribute(("type", "html"));
+            } else {
+                element.push_attribute(("type", &**content_type));
+            }
+        }
+
+        if let Some(ref src) = self.src {
+            element.push_attribute(("src", &**src));
+        }
+
+        writer.write_event(Event::Start(element))?;
+
+        if let Some(ref value) = self.value {
+            writer
+                .write_event(Event::Text(BytesText::borrowed(value.as_bytes())))?;
+        }
+
+        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+
+        Ok(())
     }
 }

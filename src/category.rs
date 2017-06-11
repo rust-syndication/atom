@@ -1,10 +1,14 @@
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 
+use quick_xml::errors::Error as XmlError;
+use quick_xml::events::{Event, BytesStart};
 use quick_xml::events::attributes::Attributes;
 use quick_xml::reader::Reader;
+use quick_xml::writer::Writer;
 
 use error::Error;
 use fromxml::FromXml;
+use toxml::ToXml;
 
 /// Represents a category in an Atom feed
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -131,5 +135,25 @@ impl FromXml for Category {
         reader.read_to_end(b"category", &mut Vec::new())?;
 
         Ok(category)
+    }
+}
+
+impl ToXml for Category {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+        let name = b"category";
+        let mut element = BytesStart::borrowed(name, name.len());
+        element.push_attribute(("term", &*self.term));
+
+        if let Some(ref scheme) = self.scheme {
+            element.push_attribute(("scheme", &**scheme));
+        }
+
+        if let Some(ref label) = self.label {
+            element.push_attribute(("label", &**label));
+        }
+
+        writer.write_event(Event::Empty(element))?;
+
+        Ok(())
     }
 }
