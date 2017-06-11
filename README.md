@@ -8,7 +8,6 @@ Library for serializing the Atom web content syndication format.
 ### Documentation
 
 - [Released](https://docs.rs/atom/)
-- [Master](https://rust-syndication.github.io/atom/atom/)
 
 ## Usage
 
@@ -24,6 +23,46 @@ The package includes a single crate named `atom_syndication`.
 ```rust
 extern crate atom_syndication;
 ```
+
+## Reading
+
+A feed can be read from any object that implements the `BufRead` trait.
+
+```rust
+use std::fs::File;
+use std::io::BufReader;
+use atom_syndication::Feed;
+
+let file = File::open("example.xml").unwrap();
+let feed = Feed::read_from(BufReader::new(reader)).unwrap();
+```
+
+## Writing
+
+A feed can be written to any object that implements the `Write` trait or converted to an XML string using the `ToString` trait.
+
+**Note**: Writing a feed does not perform any escaping of XML entities.
+
+### Example
+
+```rust
+use std::fs::File;
+use std::io::{BufReader, sink};
+use atom_syndication::Feed;
+
+let file = File::open("example.xml").unwrap();
+let feed = Feed::read_from(BufReader::new(file)).unwrap();
+
+// write to the feed to a writer
+feed.write_to(sink()).unwrap();
+
+// convert the feed to a string
+let string = feed.to_string();
+```
+
+## Invalid Feeds
+
+As a best effort to parse invalid feeds `atom_syndication` will default elements declared as "required" by the Atom specification to an empty string.
 
 ## License
 
