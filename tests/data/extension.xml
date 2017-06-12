@@ -1,0 +1,12 @@
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:ext="http://example.com">
+	<ext:title type="text">Title</ext:title>
+	<ext:parent>
+		<ext:child>Child</ext:child>
+	</ext:parent>
+	<entry>
+		<ext:title type="text">Title</ext:title>
+		<ext:parent>
+			<ext:child>Child</ext:child>
+		</ext:parent>
+	</entry>
+</feed>

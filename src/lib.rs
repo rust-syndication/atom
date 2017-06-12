@@ -58,6 +58,9 @@ mod fromxml;
 mod toxml;
 mod util;
 
+/// Types and functions for namespaced extensions.
+pub mod extension;
+
 pub use feed::Feed;
 pub use category::Category;
 pub use content::Content;

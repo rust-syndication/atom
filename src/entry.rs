@@ -9,6 +9,8 @@ use quick_xml::writer::Writer;
 use category::Category;
 use content::Content;
 use error::Error;
+use extension::ExtensionMap;
+use extension::util::{extension_name, parse_extension};
 use fromxml::FromXml;
 use link::Link;
 use person::Person;
@@ -43,6 +45,8 @@ pub struct Entry {
     summary: Option<String>,
     /// Contains or links to the complete content of the entry.
     content: Option<Content>,
+    /// The extensions for this entry.
+    extensions: ExtensionMap,
 }
 
 impl Entry {
@@ -418,6 +422,52 @@ impl Entry {
     {
         self.content = content.into();
     }
+
+    /// Return the extensions for this entry.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use atom_syndication::Entry;
+    /// use atom_syndication::extension::{ExtensionMap, Extension};
+    ///
+    /// let extension = Extension::default();
+    ///
+    /// let mut item_map = HashMap::<String, Vec<Extension>>::new();
+    /// item_map.insert("ext:name".to_string(), vec![extension]);
+    ///
+    /// let mut extension_map = ExtensionMap::default();
+    /// extension_map.insert("ext".to_string(), item_map);
+    ///
+    /// let mut entry = Entry::default();
+    /// entry.set_extensions(extension_map);
+    /// assert_eq!(entry.extensions()
+    ///                 .get("ext")
+    ///                 .and_then(|m| m.get("ext:name"))
+    ///                 .map(|v| v.len()),
+    ///            Some(1));
+    /// ```
+    pub fn extensions(&self) -> &ExtensionMap {
+        &self.extensions
+    }
+
+    /// Set the extensions for this entry.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use atom_syndication::Entry;
+    /// use atom_syndication::extension::ExtensionMap;
+    ///
+    /// let mut entry = Entry::default();
+    /// entry.set_extensions(ExtensionMap::default());
+    /// ```
+    pub fn set_extensions<V>(&mut self, extensions: V)
+        where V: Into<ExtensionMap>
+    {
+        self.extensions = extensions.into()
+    }
 }
 
 impl FromXml for Entry {
@@ -461,7 +511,17 @@ impl FromXml for Entry {
                         b"content" => {
                             entry.content = Some(Content::from_xml(reader, element.attributes())?)
                         }
-                        n => reader.read_to_end(n, &mut Vec::new())?,
+                        n => {
+                            if let Some((ns, name)) = extension_name(element.name()) {
+                                parse_extension(reader,
+                                                element.attributes(),
+                                                ns,
+                                                name,
+                                                &mut entry.extensions)?;
+                            } else {
+                                reader.read_to_end(n, &mut Vec::new())?;
+                            }
+                        }
                     }
                 }
                 Event::End(_) => break,
@@ -508,6 +568,12 @@ impl ToXml for Entry {
 
         if let Some(ref content) = self.content {
             writer.write_object(content)?;
+        }
+
+        for map in self.extensions.values() {
+            for extensions in map.values() {
+                writer.write_objects(extensions)?;
+            }
         }
 
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;

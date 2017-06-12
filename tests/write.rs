@@ -54,3 +54,9 @@ fn write_source() {
     let feed = feed!("tests/data/source.xml");
     assert_eq!(feed.to_string().parse::<Feed>().unwrap(), feed);
 }
+
+#[test]
+fn write_extension() {
+    let feed = feed!("tests/data/extension.xml");
+    assert_eq!(feed.to_string().parse::<Feed>().unwrap(), feed);
+}

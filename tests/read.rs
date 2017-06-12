@@ -4,6 +4,7 @@ use std::io::BufReader;
 use std::fs::File;
 
 use atom::Feed;
+use atom::extension::ExtensionMap;
 
 macro_rules! feed {
     ($f:expr) => ({
@@ -109,4 +110,34 @@ fn read_source() {
     assert_eq!(source.categories().len(), 2);
     assert_eq!(source.contributors().len(), 2);
     assert!(source.generator().is_some());
+}
+
+#[test]
+fn read_extension() {
+    let feed = feed!("tests/data/extension.xml");
+    let entry = feed.entries().first().unwrap();
+
+    assert_eq!(feed.namespaces().get("ext").map(|s| s.as_str()),
+               Some("http://example.com"));
+
+    let check_extensions = |extensions: &ExtensionMap| {
+        assert!(extensions.contains_key("ext"));
+        let map = extensions.get("ext").unwrap();
+
+        assert!(map.contains_key("title"));
+        let title = map.get("title").unwrap().first().unwrap();
+        assert_eq!(title.value(), Some("Title"));
+        assert_eq!(title.attrs().get("type").map(|s| s.as_str()), Some("text"));
+
+        assert!(map.contains_key("parent"));
+        let parent = map.get("parent").unwrap().first().unwrap();
+
+        assert!(parent.children().contains_key("child"));
+        let child = parent.children().get("child").unwrap().first().unwrap();
+        assert_eq!(child.value(), Some("Child"));
+    };
+
+
+    check_extensions(feed.extensions());
+    check_extensions(entry.extensions());
 }

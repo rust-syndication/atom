@@ -1,5 +1,6 @@
+use std::collections::HashMap;
 use std::io::{BufRead, Write};
-use std::str::FromStr;
+use std::str::{self, FromStr};
 
 use quick_xml::errors::Error as XmlError;
 use quick_xml::events::{Event, BytesStart, BytesEnd};
@@ -8,8 +9,10 @@ use quick_xml::reader::Reader;
 use quick_xml::writer::Writer;
 
 use category::Category;
-use error::Error;
 use entry::Entry;
+use error::Error;
+use extension::ExtensionMap;
+use extension::util::{extension_name, parse_extension};
 use fromxml::FromXml;
 use generator::Generator;
 use link::Link;
@@ -44,8 +47,12 @@ pub struct Feed {
     rights: Option<String>,
     /// A human-readable description or subtitle for the feed.
     subtitle: Option<String>,
-    /// The entries contained in this feed.
+    /// The entries contained in the feed.
     entries: Vec<Entry>,
+    /// The extensions for the feed.
+    extensions: ExtensionMap,
+    /// The namespaces present in the feed tag.
+    namespaces: HashMap<String, String>,
 }
 
 impl Feed {
@@ -71,7 +78,21 @@ impl Feed {
             match reader.read_event(&mut buf)? {
                 Event::Start(element) => {
                     if element.name() == b"feed" {
-                        return Ok(Feed::from_xml(&mut reader, element.attributes())?);
+                        let mut feed = Feed::from_xml(&mut reader, element.attributes())?;
+
+                        for attr in element.attributes().with_checks(false) {
+                            if let Ok(attr) = attr {
+                                if !attr.key.starts_with(b"xmlns:") || attr.key == b"xmlns:dc" {
+                                    continue;
+                                }
+
+                                let key = str::from_utf8(&attr.key[6..])?.to_string();
+                                let value = attr.unescape_and_decode_value(&reader)?;
+                                feed.namespaces.insert(key, value);
+                            }
+                        }
+
+                        return Ok(feed);
                     } else {
                         return Err(Error::InvalidStartTag);
                     }
@@ -508,6 +529,88 @@ impl Feed {
     {
         self.entries = entries.into();
     }
+
+    /// Return the extensions for this feed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use atom_syndication::Feed;
+    /// use atom_syndication::extension::{ExtensionMap, Extension};
+    ///
+    /// let extension = Extension::default();
+    ///
+    /// let mut item_map = HashMap::<String, Vec<Extension>>::new();
+    /// item_map.insert("ext:name".to_string(), vec![extension]);
+    ///
+    /// let mut extension_map = ExtensionMap::default();
+    /// extension_map.insert("ext".to_string(), item_map);
+    ///
+    /// let mut feed = Feed::default();
+    /// feed.set_extensions(extension_map);
+    /// assert_eq!(feed.extensions()
+    ///                .get("ext")
+    ///                .and_then(|m| m.get("ext:name"))
+    ///                .map(|v| v.len()),
+    ///            Some(1));
+    /// ```
+    pub fn extensions(&self) -> &ExtensionMap {
+        &self.extensions
+    }
+
+    /// Set the extensions for this feed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use atom_syndication::Feed;
+    /// use atom_syndication::extension::ExtensionMap;
+    ///
+    /// let mut feed = Feed::default();
+    /// feed.set_extensions(ExtensionMap::default());
+    /// ```
+    pub fn set_extensions<V>(&mut self, extensions: V)
+        where V: Into<ExtensionMap>
+    {
+        self.extensions = extensions.into()
+    }
+
+    /// Return the namespaces for this feed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use atom_syndication::Feed;
+    ///
+    /// let mut namespaces = HashMap::new();
+    /// namespaces.insert("ext".to_string(), "http://example.com".to_string());
+    ///
+    /// let mut feed = Feed::default();
+    /// feed.set_namespaces(namespaces);
+    /// assert_eq!(feed.namespaces().get("ext").map(|s| s.as_str()), Some("http://example.com"));
+    /// ```
+    pub fn namespaces(&self) -> &HashMap<String, String> {
+        &self.namespaces
+    }
+
+    /// Set the namespaces for this feed.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use atom_syndication::Feed;
+    ///
+    /// let mut feed = Feed::default();
+    /// feed.set_namespaces(HashMap::new());
+    /// ```
+    pub fn set_namespaces<V>(&mut self, namespaces: V)
+        where V: Into<HashMap<String, String>>
+    {
+        self.namespaces = namespaces.into()
+    }
 }
 
 impl FromXml for Feed {
@@ -550,7 +653,17 @@ impl FromXml for Feed {
                             feed.entries
                                 .push(Entry::from_xml(reader, element.attributes())?)
                         }
-                        n => reader.read_to_end(n, &mut Vec::new())?,
+                        n => {
+                            if let Some((ns, name)) = extension_name(element.name()) {
+                                parse_extension(reader,
+                                                element.attributes(),
+                                                ns,
+                                                name,
+                                                &mut feed.extensions)?;
+                            } else {
+                                reader.read_to_end(n, &mut Vec::new())?;
+                            }
+                        }
                     }
                 }
                 Event::End(_) => break,
@@ -568,8 +681,13 @@ impl FromXml for Feed {
 impl ToXml for Feed {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"feed";
-        writer
-            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        let mut element = BytesStart::borrowed(name, name.len());
+
+        for (ns, uri) in &self.namespaces {
+            element.push_attribute((format!("xmlns:{}", ns).as_bytes(), uri.as_bytes()));
+        }
+
+        writer.write_event(Event::Start(element))?;
         writer.write_text_element(b"title", &*self.title)?;
         writer.write_text_element(b"id", &*self.id)?;
         writer.write_text_element(b"updated", &*self.updated)?;
@@ -601,12 +719,18 @@ impl ToXml for Feed {
         }
 
         writer.write_objects(&self.entries)?;
+
+        for map in self.extensions.values() {
+            for extensions in map.values() {
+                writer.write_objects(extensions)?;
+            }
+        }
+
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
 
         Ok(())
     }
 }
-
 
 impl FromStr for Feed {
     type Err = Error;
