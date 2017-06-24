@@ -8,6 +8,7 @@ documentation = "https://docs.rs/atom_syndication/"
 license = "MIT/Apache-2.0"
 readme = "README.md"
 keywords = ["atom", "feed", "parser", "parsing"]
+categories = ["Parser implementations"]
 include = ["src/*", "Cargo.toml", "LICENSE-MIT", "LICENSE-APACHE", "README.md"]
 
 [dependencies]
