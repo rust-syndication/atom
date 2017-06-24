@@ -11,7 +11,7 @@ use fromxml::FromXml;
 use toxml::ToXml;
 
 /// Represents a category in an Atom feed
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Builder)]
 pub struct Category {
     /// Identifies the category.
     term: String,

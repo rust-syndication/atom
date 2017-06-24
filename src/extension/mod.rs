@@ -14,7 +14,7 @@ pub(crate) mod util;
 pub type ExtensionMap = HashMap<String, HashMap<String, Vec<Extension>>>;
 
 /// A namespaced extension.
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Builder)]
 pub struct Extension {
     /// The qualified name of the extension element.
     name: String,
@@ -22,8 +22,7 @@ pub struct Extension {
     value: Option<String>,
     /// The attributes for the extension element.
     attrs: HashMap<String, String>,
-    /// The children of the extension element. This is a map of local names to child
-    /// elements.
+    /// The children of the extension element. A map of local names to child elements.
     children: HashMap<String, Vec<Extension>>,
 }
 
@@ -59,11 +58,29 @@ impl Extension {
         &self.attrs
     }
 
+    /// Set the attributes for the extension element.
+    pub fn set_attrs<V>(&mut self, attrs: V)
+    where
+        V: Into<HashMap<String, String>>,
+    {
+        self.attrs = attrs.into();
+    }
+
     /// Return the children of the extension element.
     ///
-    /// This is a map of local names to child elements.
+    /// A map of local names to child elements.
     pub fn children(&self) -> &HashMap<String, Vec<Extension>> {
         &self.children
+    }
+
+    /// Set the children of the extension element.
+    ///
+    /// A map of local names to child elements.
+    pub fn set_children<V>(&mut self, children: V)
+    where
+        V: Into<HashMap<String, Vec<Extension>>>,
+    {
+        self.children = children.into();
     }
 }
 

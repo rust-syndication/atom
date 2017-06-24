@@ -45,6 +45,9 @@
 //! let string = feed.to_string();
 //! ```
 
+#[macro_use]
+extern crate derive_builder;
+
 extern crate quick_xml;
 
 mod feed;
@@ -64,12 +67,12 @@ mod util;
 /// Types and functions for namespaced extensions.
 pub mod extension;
 
-pub use feed::Feed;
-pub use category::Category;
-pub use content::Content;
-pub use entry::Entry;
-pub use generator::Generator;
-pub use link::Link;
-pub use person::Person;
-pub use source::Source;
+pub use feed::{Feed, FeedBuilder};
+pub use category::{Category, CategoryBuilder};
+pub use content::{Content, ContentBuilder};
+pub use entry::{Entry, EntryBuilder};
+pub use generator::{Generator, GeneratorBuilder};
+pub use link::{Link, LinkBuilder};
+pub use person::{Person, PersonBuilder};
+pub use source::{Source, SourceBuilder};
 pub use error::Error;

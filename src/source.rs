@@ -16,7 +16,7 @@ use toxml::{ToXml, WriterExt};
 use util::atom_text;
 
 /// Represents the source of an Atom entry
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Builder)]
 pub struct Source {
     /// A human-readable title for the feed.
     title: String,

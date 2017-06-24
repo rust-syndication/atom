@@ -12,7 +12,7 @@ use toxml::ToXml;
 use util::atom_text;
 
 /// Represents the generator of an Atom feed
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Builder)]
 pub struct Generator {
     /// The name of the generator.
     value: String,

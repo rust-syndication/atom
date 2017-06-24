@@ -12,7 +12,7 @@ use toxml::{ToXmlNamed, WriterExt};
 use util::atom_text;
 
 /// Represents a person in an Atom feed
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Builder)]
 pub struct Person {
     /// A human-readable name for the person.
     name: String,

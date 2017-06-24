@@ -19,7 +19,7 @@ use toxml::{ToXml, WriterExt};
 use util::atom_text;
 
 /// Represents an entry in an Atom feed
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Builder)]
 pub struct Entry {
     /// A human-readable title for the entry.
     title: String,
