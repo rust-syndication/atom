@@ -11,4 +11,4 @@ keywords = ["atom", "feed", "parser", "parsing"]
 include = ["src/*", "Cargo.toml", "LICENSE-MIT", "LICENSE-APACHE", "README.md"]
 
 [dependencies]
-quick-xml = "0.7"
+quick-xml = "0.8"
