@@ -28,11 +28,30 @@ pub struct Extension {
 
 impl Extension {
     /// Return the qualified name of this extension.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use atom_syndication::extension::Extension;
+    ///
+    /// let mut extension = Extension::default();
+    /// extension.set_name("ext:name");
+    /// assert_eq!(extension.name(), "ext:name");
+    /// ```
     pub fn name(&self) -> &str {
         self.name.as_str()
     }
 
     /// Set the qualified name of this extension.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use atom_syndication::extension::Extension;
+    ///
+    /// let mut extension = Extension::default();
+    /// extension.set_name("ext:name");
+    /// ```
     pub fn set_name<V>(&mut self, name: V)
     where
         V: Into<String>,
@@ -41,11 +60,30 @@ impl Extension {
     }
 
     /// Return the text content of this extension.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use atom_syndication::extension::Extension;
+    ///
+    /// let mut extension = Extension::default();
+    /// extension.set_value("John Doe".to_string());
+    /// assert_eq!(extension.value(), Some("John Doe"));
+    /// ```
     pub fn value(&self) -> Option<&str> {
         self.value.as_ref().map(|s| s.as_str())
     }
 
     /// Set the text content of this extension.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use atom_syndication::extension::Extension;
+    ///
+    /// let mut extension = Extension::default();
+    /// extension.set_value("John Doe".to_string());
+    /// ```
     pub fn set_value<V>(&mut self, value: V)
     where
         V: Into<Option<String>>,
@@ -54,11 +92,34 @@ impl Extension {
     }
 
     /// Return the attributes for the extension element.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use atom_syndication::extension::Extension;
+    ///
+    /// let mut extension = Extension::default();
+    /// let mut attrs = HashMap::<String, String>::new();
+    /// attrs.insert("email".to_string(), "johndoe@example.com".to_string());
+    /// extension.set_attrs(attrs.clone());
+    /// assert_eq!(*extension.attrs(), attrs);
+    /// ```
     pub fn attrs(&self) -> &HashMap<String, String> {
         &self.attrs
     }
 
     /// Set the attributes for the extension element.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use atom_syndication::extension::Extension;
+    ///
+    /// let mut extension = Extension::default();
+    /// extension.set_attrs(HashMap::new());
+    /// ```
     pub fn set_attrs<V>(&mut self, attrs: V)
     where
         V: Into<HashMap<String, String>>,
@@ -69,6 +130,19 @@ impl Extension {
     /// Return the children of the extension element.
     ///
     /// A map of local names to child elements.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use atom_syndication::extension::Extension;
+    ///
+    /// let mut extension = Extension::default();
+    /// let mut children = HashMap::<String, Vec<Extension>>::new();
+    /// children.insert("ext:child".to_string(), Vec::new());
+    /// extension.set_children(children);
+    /// assert!(extension.children().contains_key("ext:child"));
+    /// ```
     pub fn children(&self) -> &HashMap<String, Vec<Extension>> {
         &self.children
     }
@@ -76,6 +150,16 @@ impl Extension {
     /// Set the children of the extension element.
     ///
     /// A map of local names to child elements.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use atom_syndication::extension::Extension;
+    ///
+    /// let mut extension = Extension::default();
+    /// extension.set_children(HashMap::new());
+    /// ```
     pub fn set_children<V>(&mut self, children: V)
     where
         V: Into<HashMap<String, Vec<Extension>>>,
