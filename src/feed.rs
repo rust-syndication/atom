@@ -641,21 +641,16 @@ impl FromXml for Feed {
                         b"id" => feed.id = atom_text(reader)?.unwrap_or_default(),
                         b"updated" => feed.updated = atom_text(reader)?.unwrap_or_default(),
                         b"author" => {
-                            feed.authors.push(
-                                Person::from_xml(reader, element.attributes())?,
-                            )
+                            feed.authors
+                                .push(Person::from_xml(reader, element.attributes())?)
                         }
                         b"category" => {
-                            feed.categories.push(Category::from_xml(
-                                reader,
-                                element.attributes(),
-                            )?)
+                            feed.categories
+                                .push(Category::from_xml(reader, element.attributes())?)
                         }
                         b"contributor" => {
-                            feed.contributors.push(Person::from_xml(
-                                reader,
-                                element.attributes(),
-                            )?)
+                            feed.contributors
+                                .push(Person::from_xml(reader, element.attributes())?)
                         }
                         b"generator" => {
                             feed.generator =
@@ -663,17 +658,15 @@ impl FromXml for Feed {
                         }
                         b"icon" => feed.icon = atom_text(reader)?,
                         b"link" => {
-                            feed.links.push(
-                                Link::from_xml(reader, element.attributes())?,
-                            )
+                            feed.links
+                                .push(Link::from_xml(reader, element.attributes())?)
                         }
                         b"logo" => feed.logo = atom_text(reader)?,
                         b"rights" => feed.rights = atom_text(reader)?,
                         b"subtitle" => feed.subtitle = atom_text(reader)?,
                         b"entry" => {
-                            feed.entries.push(
-                                Entry::from_xml(reader, element.attributes())?,
-                            )
+                            feed.entries
+                                .push(Entry::from_xml(reader, element.attributes())?)
                         }
                         n => {
                             if let Some((ns, name)) = extension_name(element.name()) {
@@ -717,10 +710,8 @@ impl ToXml for Feed {
         writer.write_text_element(b"updated", &*self.updated)?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
-        writer.write_objects_named(
-            &self.contributors,
-            "contributor",
-        )?;
+        writer
+            .write_objects_named(&self.contributors, "contributor")?;
 
         if let Some(ref generator) = self.generator {
             writer.write_object(generator)?;

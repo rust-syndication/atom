@@ -443,22 +443,19 @@ impl FromXml for Source {
                         b"title" => source.title = atom_text(reader)?.unwrap_or_default(),
                         b"updated" => source.updated = atom_text(reader)?.unwrap_or_default(),
                         b"author" => {
-                            source.authors.push(Person::from_xml(
-                                reader,
-                                element.attributes(),
-                            )?)
+                            source
+                                .authors
+                                .push(Person::from_xml(reader, element.attributes())?)
                         }
                         b"category" => {
-                            source.categories.push(Category::from_xml(
-                                reader,
-                                element.attributes(),
-                            )?)
+                            source
+                                .categories
+                                .push(Category::from_xml(reader, element.attributes())?)
                         }
                         b"contributor" => {
-                            source.contributors.push(Person::from_xml(
-                                reader,
-                                element.attributes(),
-                            )?)
+                            source
+                                .contributors
+                                .push(Person::from_xml(reader, element.attributes())?)
                         }
                         b"generator" => {
                             source.generator =
@@ -466,9 +463,9 @@ impl FromXml for Source {
                         }
                         b"icon" => source.icon = atom_text(reader)?,
                         b"link" => {
-                            source.links.push(
-                                Link::from_xml(reader, element.attributes())?,
-                            )
+                            source
+                                .links
+                                .push(Link::from_xml(reader, element.attributes())?)
                         }
                         b"logo" => source.logo = atom_text(reader)?,
                         b"rights" => source.rights = atom_text(reader)?,
@@ -491,18 +488,15 @@ impl FromXml for Source {
 impl ToXml for Source {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"source";
-        writer.write_event(
-            Event::Start(BytesStart::borrowed(name, name.len())),
-        )?;
+        writer
+            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
         writer.write_text_element(b"title", &*self.title)?;
         writer.write_text_element(b"id", &*self.id)?;
         writer.write_text_element(b"updated", &*self.updated)?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
-        writer.write_objects_named(
-            &self.contributors,
-            "contributor",
-        )?;
+        writer
+            .write_objects_named(&self.contributors, "contributor")?;
 
         if let Some(ref generator) = self.generator {
             writer.write_object(generator)?;

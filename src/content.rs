@@ -166,9 +166,8 @@ impl ToXml for Content {
         writer.write_event(Event::Start(element))?;
 
         if let Some(ref value) = self.value {
-            writer.write_event(
-                Event::Text(BytesText::borrowed(value.as_bytes())),
-            )?;
+            writer
+                .write_event(Event::Text(BytesText::borrowed(value.as_bytes())))?;
         }
 
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;

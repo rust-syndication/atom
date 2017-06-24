@@ -154,9 +154,8 @@ impl ToXmlNamed for Person {
         N: AsRef<[u8]>,
     {
         let name = name.as_ref();
-        writer.write_event(
-            Event::Start(BytesStart::borrowed(name, name.len())),
-        )?;
+        writer
+            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
         writer.write_text_element(b"name", &*self.name)?;
 
         if let Some(ref email) = self.email {

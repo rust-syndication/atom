@@ -496,26 +496,24 @@ impl FromXml for Entry {
                         b"title" => entry.title = atom_text(reader)?.unwrap_or_default(),
                         b"updated" => entry.updated = atom_text(reader)?.unwrap_or_default(),
                         b"author" => {
-                            entry.authors.push(
-                                Person::from_xml(reader, element.attributes())?,
-                            )
+                            entry
+                                .authors
+                                .push(Person::from_xml(reader, element.attributes())?)
                         }
                         b"category" => {
-                            entry.categories.push(Category::from_xml(
-                                reader,
-                                element.attributes(),
-                            )?)
+                            entry
+                                .categories
+                                .push(Category::from_xml(reader, element.attributes())?)
                         }
                         b"contributor" => {
-                            entry.contributors.push(Person::from_xml(
-                                reader,
-                                element.attributes(),
-                            )?)
+                            entry
+                                .contributors
+                                .push(Person::from_xml(reader, element.attributes())?)
                         }
                         b"link" => {
-                            entry.links.push(
-                                Link::from_xml(reader, element.attributes())?,
-                            )
+                            entry
+                                .links
+                                .push(Link::from_xml(reader, element.attributes())?)
                         }
                         b"published" => entry.published = atom_text(reader)?,
                         b"rights" => entry.rights = atom_text(reader)?,
@@ -556,18 +554,15 @@ impl FromXml for Entry {
 impl ToXml for Entry {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"entry";
-        writer.write_event(
-            Event::Start(BytesStart::borrowed(name, name.len())),
-        )?;
+        writer
+            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
         writer.write_text_element(b"title", &*self.title)?;
         writer.write_text_element(b"id", &*self.id)?;
         writer.write_text_element(b"updated", &*self.updated)?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
-        writer.write_objects_named(
-            &self.contributors,
-            "contributor",
-        )?;
+        writer
+            .write_objects_named(&self.contributors, "contributor")?;
         writer.write_objects(&self.links)?;
 
         if let Some(ref published) = self.published {
