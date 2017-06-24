@@ -1,13 +1,11 @@
 # atom
 
 [![Build Status](https://travis-ci.org/rust-syndication/atom.svg?branch=master)](https://travis-ci.org/rust-syndication/atom)
-[![Crates.io Status](http://meritbadge.herokuapp.com/atom)](https://crates.io/crates/atom)
+[![Crates.io Status](http://meritbadge.herokuapp.com/atom_syndication)](https://crates.io/crates/atom_syndication)
 
 Library for serializing the Atom web content syndication format.
 
-### Documentation
-
-- [Released](https://docs.rs/atom/)
+[Documentation](https://docs.rs/atom_syndication/)
 
 ## Usage
 
@@ -15,7 +13,7 @@ Add the dependency to your `Cargo.toml`.
 
 ```toml
 [dependencies]
-atom = "0.5"
+atom_syndication = "0.5"
 ```
 
 The package includes a single crate named `atom_syndication`.
@@ -26,7 +24,7 @@ extern crate atom_syndication;
 
 ## Reading
 
-A feed can be read from any object that implements the `BufRead` trait.
+A feed can be read from any object that implements the `BufRead` trait or using the `FromStr` trait.
 
 ```rust
 use std::fs::File;
@@ -35,6 +33,9 @@ use atom_syndication::Feed;
 
 let file = File::open("example.xml").unwrap();
 let feed = Feed::read_from(BufReader::new(reader)).unwrap();
+
+let string = "<feed></feed>";
+let feed = string.parse::<Feed>().unwrap();
 ```
 
 ## Writing

@@ -1,12 +1,13 @@
 #![warn(missing_docs)]
 
-#![doc(html_root_url = "https://docs.rs/atom/")]
+#![doc(html_root_url = "https://docs.rs/atom_syndication/")]
 
 //! Library for serializing the Atom web content syndication format.
 //!
 //! # Reading
 //!
-//! A feed can be read from any object that implements the `BufRead` trait.
+//! A feed can be read from any object that implements the `BufRead` trait or using
+//! the `FromStr` trait.
 //!
 //! ```no_run
 //! use std::fs::File;
@@ -15,6 +16,9 @@
 //!
 //! let file = File::open("example.xml").unwrap();
 //! let feed = Feed::read_from(BufReader::new(file)).unwrap();
+//!
+//! let string = "<feed></feed>";
+//! let feed = string.parse::<Feed>().unwrap();
 //! ```
 //!
 //! # Writing
@@ -40,7 +44,6 @@
 //! // convert the feed to a string
 //! let string = feed.to_string();
 //! ```
-
 
 extern crate quick_xml;
 
