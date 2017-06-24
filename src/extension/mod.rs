@@ -35,7 +35,8 @@ impl Extension {
 
     /// Set the qualified name of this extension.
     pub fn set_name<V>(&mut self, name: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.name = name.into();
     }
@@ -47,7 +48,8 @@ impl Extension {
 
     /// Set the text content of this extension.
     pub fn set_value<V>(&mut self, value: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.value = value.into();
     }
@@ -73,8 +75,9 @@ impl ToXml for Extension {
         writer.write_event(Event::Start(element))?;
 
         if let Some(value) = self.value.as_ref() {
-            writer
-                .write_event(Event::Text(BytesText::borrowed(value.as_bytes())))?;
+            writer.write_event(
+                Event::Text(BytesText::borrowed(value.as_bytes())),
+            )?;
         }
 
         for extension in self.children.values().flat_map(|extensions| extensions) {

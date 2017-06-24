@@ -50,7 +50,8 @@ impl Generator {
     /// assert_eq!(generator.value(), "Feed Generator");
     /// ```
     pub fn set_value<V>(&mut self, value: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.value = value.into()
     }
@@ -81,7 +82,8 @@ impl Generator {
     /// generator.set_uri("http://example.com/generator".to_string());
     /// ```
     pub fn set_uri<V>(&mut self, uri: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.uri = uri.into()
     }
@@ -112,7 +114,8 @@ impl Generator {
     /// generator.set_version("1.0".to_string());
     /// ```
     pub fn set_version<V>(&mut self, version: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.version = version.into()
     }
@@ -152,8 +155,9 @@ impl ToXml for Generator {
         }
 
         writer.write_event(Event::Start(element))?;
-        writer
-            .write_event(Event::Text(BytesText::borrowed(self.value.as_bytes())))?;
+        writer.write_event(Event::Text(
+            BytesText::borrowed(self.value.as_bytes()),
+        ))?;
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
 
         Ok(())

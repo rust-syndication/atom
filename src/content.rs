@@ -52,7 +52,8 @@ impl Content {
     /// content.set_value("Example content".to_string());
     /// ```
     pub fn set_value<V>(&mut self, value: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.value = value.into();
     }
@@ -83,7 +84,8 @@ impl Content {
     /// content.set_src("http://example.com/content.html".to_string());
     /// ```
     pub fn set_src<V>(&mut self, src: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.src = src.into();
     }
@@ -117,7 +119,8 @@ impl Content {
     /// assert_eq!(content.content_type(), Some("image/png"));
     /// ```
     pub fn set_content_type<V>(&mut self, content_type: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.content_type = content_type.into();
     }
@@ -163,8 +166,9 @@ impl ToXml for Content {
         writer.write_event(Event::Start(element))?;
 
         if let Some(ref value) = self.value {
-            writer
-                .write_event(Event::Text(BytesText::borrowed(value.as_bytes())))?;
+            writer.write_event(
+                Event::Text(BytesText::borrowed(value.as_bytes())),
+            )?;
         }
 
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;

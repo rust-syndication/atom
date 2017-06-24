@@ -67,7 +67,8 @@ impl Link {
     /// link.set_href("http://example.com");
     /// ```
     pub fn set_href<V>(&mut self, href: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.href = href.into()
     }
@@ -98,7 +99,8 @@ impl Link {
     /// link.set_rel("alternate");
     /// ```
     pub fn set_rel<V>(&mut self, rel: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.rel = rel.into()
     }
@@ -129,7 +131,8 @@ impl Link {
     /// link.set_hreflang("en".to_string());
     /// ```
     pub fn set_hreflang<V>(&mut self, hreflang: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.hreflang = hreflang.into()
     }
@@ -160,7 +163,8 @@ impl Link {
     /// link.set_mime_type("text/html".to_string());
     /// ```
     pub fn set_mime_type<V>(&mut self, mime_type: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.mime_type = mime_type.into()
     }
@@ -191,7 +195,8 @@ impl Link {
     /// link.set_title("Article Title".to_string());
     /// ```
     pub fn set_title<V>(&mut self, title: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.title = title.into()
     }
@@ -222,7 +227,8 @@ impl Link {
     /// link.set_length("1000".to_string());
     /// ```
     pub fn set_length<V>(&mut self, length: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.length = length.into()
     }

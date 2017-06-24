@@ -76,7 +76,8 @@ impl Entry {
     /// entry.set_title("Entry Title");
     /// ```
     pub fn set_title<V>(&mut self, title: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.title = title.into();
     }
@@ -107,7 +108,8 @@ impl Entry {
     /// entry.set_id("urn:uuid:60a76c80-d399-11d9-b91C-0003939e0af6");
     /// ```
     pub fn set_id<V>(&mut self, id: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.id = id.into();
     }
@@ -138,7 +140,8 @@ impl Entry {
     /// entry.set_updated("2017-06-03T15:15:44-05:00");
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.updated = updated.into();
     }
@@ -169,7 +172,8 @@ impl Entry {
     /// entry.set_authors(vec![Person::default()]);
     /// ```
     pub fn set_authors<V>(&mut self, authors: V)
-        where V: Into<Vec<Person>>
+    where
+        V: Into<Vec<Person>>,
     {
         self.authors = authors.into();
     }
@@ -200,7 +204,8 @@ impl Entry {
     /// entry.set_categories(vec![Category::default()]);
     /// ```
     pub fn set_categories<V>(&mut self, categories: V)
-        where V: Into<Vec<Category>>
+    where
+        V: Into<Vec<Category>>,
     {
         self.categories = categories.into();
     }
@@ -231,7 +236,8 @@ impl Entry {
     /// entry.set_contributors(vec![Person::default()]);
     /// ```
     pub fn set_contributors<V>(&mut self, contributors: V)
-        where V: Into<Vec<Person>>
+    where
+        V: Into<Vec<Person>>,
     {
         self.contributors = contributors.into();
     }
@@ -262,7 +268,8 @@ impl Entry {
     /// entry.set_links(vec![Link::default()]);
     /// ```
     pub fn set_links<V>(&mut self, links: V)
-        where V: Into<Vec<Link>>
+    where
+        V: Into<Vec<Link>>,
     {
         self.links = links.into();
     }
@@ -293,7 +300,8 @@ impl Entry {
     /// entry.set_published("2017-06-01T15:15:44-05:00".to_string());
     /// ```
     pub fn set_published<V>(&mut self, published: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.published = published.into();
     }
@@ -324,7 +332,8 @@ impl Entry {
     /// entry.set_rights("© 2017 John Doe".to_string());
     /// ```
     pub fn set_rights<V>(&mut self, rights: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.rights = rights.into();
     }
@@ -355,7 +364,8 @@ impl Entry {
     /// entry.set_source(Source::default());
     /// ```
     pub fn set_source<V>(&mut self, source: V)
-        where V: Into<Option<Source>>
+    where
+        V: Into<Option<Source>>,
     {
         self.source = source.into()
     }
@@ -386,7 +396,8 @@ impl Entry {
     /// entry.set_summary("Entry summary.".to_string());
     /// ```
     pub fn set_summary<V>(&mut self, summary: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.summary = summary.into();
     }
@@ -418,7 +429,8 @@ impl Entry {
     /// assert!(entry.content().is_some());
     /// ```
     pub fn set_content<V>(&mut self, content: V)
-        where V: Into<Option<Content>>
+    where
+        V: Into<Option<Content>>,
     {
         self.content = content.into();
     }
@@ -464,7 +476,8 @@ impl Entry {
     /// entry.set_extensions(ExtensionMap::default());
     /// ```
     pub fn set_extensions<V>(&mut self, extensions: V)
-        where V: Into<ExtensionMap>
+    where
+        V: Into<ExtensionMap>,
     {
         self.extensions = extensions.into()
     }
@@ -483,24 +496,26 @@ impl FromXml for Entry {
                         b"title" => entry.title = atom_text(reader)?.unwrap_or_default(),
                         b"updated" => entry.updated = atom_text(reader)?.unwrap_or_default(),
                         b"author" => {
-                            entry
-                                .authors
-                                .push(Person::from_xml(reader, element.attributes())?)
+                            entry.authors.push(
+                                Person::from_xml(reader, element.attributes())?,
+                            )
                         }
                         b"category" => {
-                            entry
-                                .categories
-                                .push(Category::from_xml(reader, element.attributes())?)
+                            entry.categories.push(Category::from_xml(
+                                reader,
+                                element.attributes(),
+                            )?)
                         }
                         b"contributor" => {
-                            entry
-                                .contributors
-                                .push(Person::from_xml(reader, element.attributes())?)
+                            entry.contributors.push(Person::from_xml(
+                                reader,
+                                element.attributes(),
+                            )?)
                         }
                         b"link" => {
-                            entry
-                                .links
-                                .push(Link::from_xml(reader, element.attributes())?)
+                            entry.links.push(
+                                Link::from_xml(reader, element.attributes())?,
+                            )
                         }
                         b"published" => entry.published = atom_text(reader)?,
                         b"rights" => entry.rights = atom_text(reader)?,
@@ -513,11 +528,13 @@ impl FromXml for Entry {
                         }
                         n => {
                             if let Some((ns, name)) = extension_name(element.name()) {
-                                parse_extension(reader,
-                                                element.attributes(),
-                                                ns,
-                                                name,
-                                                &mut entry.extensions)?;
+                                parse_extension(
+                                    reader,
+                                    element.attributes(),
+                                    ns,
+                                    name,
+                                    &mut entry.extensions,
+                                )?;
                             } else {
                                 reader.read_to_end(n, &mut Vec::new())?;
                             }
@@ -539,15 +556,18 @@ impl FromXml for Entry {
 impl ToXml for Entry {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"entry";
-        writer
-            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_event(
+            Event::Start(BytesStart::borrowed(name, name.len())),
+        )?;
         writer.write_text_element(b"title", &*self.title)?;
         writer.write_text_element(b"id", &*self.id)?;
         writer.write_text_element(b"updated", &*self.updated)?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
-        writer
-            .write_objects_named(&self.contributors, "contributor")?;
+        writer.write_objects_named(
+            &self.contributors,
+            "contributor",
+        )?;
         writer.write_objects(&self.links)?;
 
         if let Some(ref published) = self.published {

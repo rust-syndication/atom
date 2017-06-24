@@ -153,7 +153,8 @@ impl Feed {
     /// feed.set_title("Feed Title");
     /// ```
     pub fn set_title<V>(&mut self, title: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.title = title.into();
     }
@@ -184,7 +185,8 @@ impl Feed {
     /// feed.set_id("urn:uuid:60a76c80-d399-11d9-b91C-0003939e0af6");
     /// ```
     pub fn set_id<V>(&mut self, id: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.id = id.into();
     }
@@ -215,7 +217,8 @@ impl Feed {
     /// feed.set_updated("2017-06-03T15:15:44-05:00");
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.updated = updated.into();
     }
@@ -246,7 +249,8 @@ impl Feed {
     /// feed.set_authors(vec![Person::default()]);
     /// ```
     pub fn set_authors<V>(&mut self, authors: V)
-        where V: Into<Vec<Person>>
+    where
+        V: Into<Vec<Person>>,
     {
         self.authors = authors.into();
     }
@@ -277,7 +281,8 @@ impl Feed {
     /// feed.set_categories(vec![Category::default()]);
     /// ```
     pub fn set_categories<V>(&mut self, categories: V)
-        where V: Into<Vec<Category>>
+    where
+        V: Into<Vec<Category>>,
     {
         self.categories = categories.into();
     }
@@ -308,7 +313,8 @@ impl Feed {
     /// feed.set_contributors(vec![Person::default()]);
     /// ```
     pub fn set_contributors<V>(&mut self, contributors: V)
-        where V: Into<Vec<Person>>
+    where
+        V: Into<Vec<Person>>,
     {
         self.contributors = contributors.into();
     }
@@ -339,7 +345,8 @@ impl Feed {
     /// feed.set_generator(Generator::default());
     /// ```
     pub fn set_generator<V>(&mut self, generator: V)
-        where V: Into<Option<Generator>>
+    where
+        V: Into<Option<Generator>>,
     {
         self.generator = generator.into()
     }
@@ -370,7 +377,8 @@ impl Feed {
     /// feed.set_icon("http://example.com/icon.png".to_string());
     /// ```
     pub fn set_icon<V>(&mut self, icon: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.icon = icon.into()
     }
@@ -401,7 +409,8 @@ impl Feed {
     /// feed.set_links(vec![Link::default()]);
     /// ```
     pub fn set_links<V>(&mut self, links: V)
-        where V: Into<Vec<Link>>
+    where
+        V: Into<Vec<Link>>,
     {
         self.links = links.into();
     }
@@ -432,7 +441,8 @@ impl Feed {
     /// feed.set_logo("http://example.com/logo.png".to_string());
     /// ```
     pub fn set_logo<V>(&mut self, logo: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.logo = logo.into()
     }
@@ -463,7 +473,8 @@ impl Feed {
     /// feed.set_rights("© 2017 John Doe".to_string());
     /// ```
     pub fn set_rights<V>(&mut self, rights: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.rights = rights.into()
     }
@@ -494,7 +505,8 @@ impl Feed {
     /// feed.set_subtitle("Feed subtitle".to_string());
     /// ```
     pub fn set_subtitle<V>(&mut self, subtitle: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.subtitle = subtitle.into()
     }
@@ -525,7 +537,8 @@ impl Feed {
     /// feed.set_entries(vec![Entry::default()]);
     /// ```
     pub fn set_entries<V>(&mut self, entries: V)
-        where V: Into<Vec<Entry>>
+    where
+        V: Into<Vec<Entry>>,
     {
         self.entries = entries.into();
     }
@@ -571,7 +584,8 @@ impl Feed {
     /// feed.set_extensions(ExtensionMap::default());
     /// ```
     pub fn set_extensions<V>(&mut self, extensions: V)
-        where V: Into<ExtensionMap>
+    where
+        V: Into<ExtensionMap>,
     {
         self.extensions = extensions.into()
     }
@@ -607,7 +621,8 @@ impl Feed {
     /// feed.set_namespaces(HashMap::new());
     /// ```
     pub fn set_namespaces<V>(&mut self, namespaces: V)
-        where V: Into<HashMap<String, String>>
+    where
+        V: Into<HashMap<String, String>>,
     {
         self.namespaces = namespaces.into()
     }
@@ -626,40 +641,49 @@ impl FromXml for Feed {
                         b"id" => feed.id = atom_text(reader)?.unwrap_or_default(),
                         b"updated" => feed.updated = atom_text(reader)?.unwrap_or_default(),
                         b"author" => {
-                            feed.authors
-                                .push(Person::from_xml(reader, element.attributes())?)
+                            feed.authors.push(
+                                Person::from_xml(reader, element.attributes())?,
+                            )
                         }
                         b"category" => {
-                            feed.categories
-                                .push(Category::from_xml(reader, element.attributes())?)
+                            feed.categories.push(Category::from_xml(
+                                reader,
+                                element.attributes(),
+                            )?)
                         }
                         b"contributor" => {
-                            feed.contributors
-                                .push(Person::from_xml(reader, element.attributes())?)
+                            feed.contributors.push(Person::from_xml(
+                                reader,
+                                element.attributes(),
+                            )?)
                         }
                         b"generator" => {
-                            feed.generator = Some(Generator::from_xml(reader,
-                                                                      element.attributes())?)
+                            feed.generator =
+                                Some(Generator::from_xml(reader, element.attributes())?)
                         }
                         b"icon" => feed.icon = atom_text(reader)?,
                         b"link" => {
-                            feed.links
-                                .push(Link::from_xml(reader, element.attributes())?)
+                            feed.links.push(
+                                Link::from_xml(reader, element.attributes())?,
+                            )
                         }
                         b"logo" => feed.logo = atom_text(reader)?,
                         b"rights" => feed.rights = atom_text(reader)?,
                         b"subtitle" => feed.subtitle = atom_text(reader)?,
                         b"entry" => {
-                            feed.entries
-                                .push(Entry::from_xml(reader, element.attributes())?)
+                            feed.entries.push(
+                                Entry::from_xml(reader, element.attributes())?,
+                            )
                         }
                         n => {
                             if let Some((ns, name)) = extension_name(element.name()) {
-                                parse_extension(reader,
-                                                element.attributes(),
-                                                ns,
-                                                name,
-                                                &mut feed.extensions)?;
+                                parse_extension(
+                                    reader,
+                                    element.attributes(),
+                                    ns,
+                                    name,
+                                    &mut feed.extensions,
+                                )?;
                             } else {
                                 reader.read_to_end(n, &mut Vec::new())?;
                             }
@@ -693,8 +717,10 @@ impl ToXml for Feed {
         writer.write_text_element(b"updated", &*self.updated)?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
-        writer
-            .write_objects_named(&self.contributors, "contributor")?;
+        writer.write_objects_named(
+            &self.contributors,
+            "contributor",
+        )?;
 
         if let Some(ref generator) = self.generator {
             writer.write_object(generator)?;

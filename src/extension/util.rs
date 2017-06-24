@@ -17,13 +17,15 @@ pub fn extension_name(element_name: &[u8]) -> Option<(&[u8], &[u8])> {
     }
 }
 
-pub fn parse_extension<R>(reader: &mut Reader<R>,
-                          atts: Attributes,
-                          ns: &[u8],
-                          name: &[u8],
-                          extensions: &mut ExtensionMap)
-                          -> Result<(), Error>
-    where R: BufRead
+pub fn parse_extension<R>(
+    reader: &mut Reader<R>,
+    atts: Attributes,
+    ns: &[u8],
+    name: &[u8],
+    extensions: &mut ExtensionMap,
+) -> Result<(), Error>
+where
+    R: BufRead,
 {
     let ns = str::from_utf8(ns)?;
     let name = str::from_utf8(name)?;
@@ -52,9 +54,10 @@ pub fn parse_extension<R>(reader: &mut Reader<R>,
     Ok(())
 }
 
-fn parse_extension_element<R: BufRead>(reader: &mut Reader<R>,
-                                       mut atts: Attributes)
-                                       -> Result<Extension, Error> {
+fn parse_extension_element<R: BufRead>(
+    reader: &mut Reader<R>,
+    mut atts: Attributes,
+) -> Result<Extension, Error> {
     let mut extension = Extension::default();
     let mut buf = Vec::new();
 

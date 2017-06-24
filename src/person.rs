@@ -49,7 +49,8 @@ impl Person {
     /// person.set_name("John Doe");
     /// ```
     pub fn set_name<V>(&mut self, name: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.name = name.into()
     }
@@ -80,7 +81,8 @@ impl Person {
     /// person.set_email("johndoe@example.com".to_string());
     /// ```
     pub fn set_email<V>(&mut self, email: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.email = email.into()
     }
@@ -111,7 +113,8 @@ impl Person {
     /// person.set_uri("http://example.com".to_string());
     /// ```
     pub fn set_uri<V>(&mut self, uri: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.uri = uri.into()
     }
@@ -146,12 +149,14 @@ impl FromXml for Person {
 
 impl ToXmlNamed for Person {
     fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), XmlError>
-        where W: Write,
-              N: AsRef<[u8]>
+    where
+        W: Write,
+        N: AsRef<[u8]>,
     {
         let name = name.as_ref();
-        writer
-            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_event(
+            Event::Start(BytesStart::borrowed(name, name.len())),
+        )?;
         writer.write_text_element(b"name", &*self.name)?;
 
         if let Some(ref email) = self.email {

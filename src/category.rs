@@ -48,7 +48,8 @@ impl Category {
     /// category.set_term("technology");
     /// ```
     pub fn set_term<V>(&mut self, term: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.term = term.into();
     }
@@ -79,7 +80,8 @@ impl Category {
     /// category.set_scheme("http://example.com/scheme".to_string());
     /// ```
     pub fn set_scheme<V>(&mut self, scheme: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.scheme = scheme.into();
     }
@@ -111,7 +113,8 @@ impl Category {
     /// category.set_scheme("Technology".to_string());
     /// ```
     pub fn set_label<V>(&mut self, label: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.label = label.into();
     }

@@ -71,7 +71,8 @@ impl Source {
     /// source.set_title("Feed Title");
     /// ```
     pub fn set_title<V>(&mut self, title: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.title = title.into();
     }
@@ -102,7 +103,8 @@ impl Source {
     /// source.set_id("urn:uuid:60a76c80-d399-11d9-b91C-0003939e0af6");
     /// ```
     pub fn set_id<V>(&mut self, id: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.id = id.into();
     }
@@ -133,7 +135,8 @@ impl Source {
     /// source.set_updated("2017-06-03T15:15:44-05:00");
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
-        where V: Into<String>
+    where
+        V: Into<String>,
     {
         self.updated = updated.into();
     }
@@ -164,7 +167,8 @@ impl Source {
     /// source.set_authors(vec![Person::default()]);
     /// ```
     pub fn set_authors<V>(&mut self, authors: V)
-        where V: Into<Vec<Person>>
+    where
+        V: Into<Vec<Person>>,
     {
         self.authors = authors.into();
     }
@@ -195,7 +199,8 @@ impl Source {
     /// source.set_categories(vec![Category::default()]);
     /// ```
     pub fn set_categories<V>(&mut self, categories: V)
-        where V: Into<Vec<Category>>
+    where
+        V: Into<Vec<Category>>,
     {
         self.categories = categories.into();
     }
@@ -226,7 +231,8 @@ impl Source {
     /// source.set_contributors(vec![Person::default()]);
     /// ```
     pub fn set_contributors<V>(&mut self, contributors: V)
-        where V: Into<Vec<Person>>
+    where
+        V: Into<Vec<Person>>,
     {
         self.contributors = contributors.into();
     }
@@ -257,7 +263,8 @@ impl Source {
     /// source.set_generator(Generator::default());
     /// ```
     pub fn set_generator<V>(&mut self, generator: V)
-        where V: Into<Option<Generator>>
+    where
+        V: Into<Option<Generator>>,
     {
         self.generator = generator.into()
     }
@@ -288,7 +295,8 @@ impl Source {
     /// source.set_icon("http://example.com/icon.png".to_string());
     /// ```
     pub fn set_icon<V>(&mut self, icon: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.icon = icon.into()
     }
@@ -319,7 +327,8 @@ impl Source {
     /// source.set_links(vec![Link::default()]);
     /// ```
     pub fn set_links<V>(&mut self, links: V)
-        where V: Into<Vec<Link>>
+    where
+        V: Into<Vec<Link>>,
     {
         self.links = links.into();
     }
@@ -350,7 +359,8 @@ impl Source {
     /// source.set_logo("http://example.com/logo.png".to_string());
     /// ```
     pub fn set_logo<V>(&mut self, logo: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.logo = logo.into()
     }
@@ -381,7 +391,8 @@ impl Source {
     /// source.set_rights("© 2017 John Doe".to_string());
     /// ```
     pub fn set_rights<V>(&mut self, rights: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.rights = rights.into()
     }
@@ -412,7 +423,8 @@ impl Source {
     /// source.set_subtitle("Feed subtitle".to_string());
     /// ```
     pub fn set_subtitle<V>(&mut self, subtitle: V)
-        where V: Into<Option<String>>
+    where
+        V: Into<Option<String>>,
     {
         self.subtitle = subtitle.into()
     }
@@ -431,29 +443,32 @@ impl FromXml for Source {
                         b"title" => source.title = atom_text(reader)?.unwrap_or_default(),
                         b"updated" => source.updated = atom_text(reader)?.unwrap_or_default(),
                         b"author" => {
-                            source
-                                .authors
-                                .push(Person::from_xml(reader, element.attributes())?)
+                            source.authors.push(Person::from_xml(
+                                reader,
+                                element.attributes(),
+                            )?)
                         }
                         b"category" => {
-                            source
-                                .categories
-                                .push(Category::from_xml(reader, element.attributes())?)
+                            source.categories.push(Category::from_xml(
+                                reader,
+                                element.attributes(),
+                            )?)
                         }
                         b"contributor" => {
-                            source
-                                .contributors
-                                .push(Person::from_xml(reader, element.attributes())?)
+                            source.contributors.push(Person::from_xml(
+                                reader,
+                                element.attributes(),
+                            )?)
                         }
                         b"generator" => {
-                            source.generator = Some(Generator::from_xml(reader,
-                                                                        element.attributes())?)
+                            source.generator =
+                                Some(Generator::from_xml(reader, element.attributes())?)
                         }
                         b"icon" => source.icon = atom_text(reader)?,
                         b"link" => {
-                            source
-                                .links
-                                .push(Link::from_xml(reader, element.attributes())?)
+                            source.links.push(
+                                Link::from_xml(reader, element.attributes())?,
+                            )
                         }
                         b"logo" => source.logo = atom_text(reader)?,
                         b"rights" => source.rights = atom_text(reader)?,
@@ -476,15 +491,18 @@ impl FromXml for Source {
 impl ToXml for Source {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"source";
-        writer
-            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_event(
+            Event::Start(BytesStart::borrowed(name, name.len())),
+        )?;
         writer.write_text_element(b"title", &*self.title)?;
         writer.write_text_element(b"id", &*self.id)?;
         writer.write_text_element(b"updated", &*self.updated)?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
-        writer
-            .write_objects_named(&self.contributors, "contributor")?;
+        writer.write_objects_named(
+            &self.contributors,
+            "contributor",
+        )?;
 
         if let Some(ref generator) = self.generator {
             writer.write_object(generator)?;

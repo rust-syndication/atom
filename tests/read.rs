@@ -117,8 +117,10 @@ fn read_extension() {
     let feed = feed!("tests/data/extension.xml");
     let entry = feed.entries().first().unwrap();
 
-    assert_eq!(feed.namespaces().get("ext").map(|s| s.as_str()),
-               Some("http://example.com"));
+    assert_eq!(
+        feed.namespaces().get("ext").map(|s| s.as_str()),
+        Some("http://example.com")
+    );
 
     let check_extensions = |extensions: &ExtensionMap| {
         assert!(extensions.contains_key("ext"));

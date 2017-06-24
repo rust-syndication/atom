@@ -53,13 +53,17 @@ fn text_plain_escaped() {
 #[test]
 fn text_xhtml_escaped() {
     let feed = feed!("tests/data/text_xhtml_escaped.xml");
-    assert_eq!(feed.title(),
-               "<div xmlns=\"http://www.w3.org/1999/xhtml\">&lt;p&gt;Feed Title&lt;/p&gt;</div>");
+    assert_eq!(
+        feed.title(),
+        "<div xmlns=\"http://www.w3.org/1999/xhtml\">&lt;p&gt;Feed Title&lt;/p&gt;</div>"
+    );
 }
 
 #[test]
 fn text_xhtml() {
     let feed = feed!("tests/data/text_xhtml.xml");
-    assert_eq!(feed.title(),
-               "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Feed Title</p></div>");
+    assert_eq!(
+        feed.title(),
+        "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Feed Title</p></div>"
+    );
 }
