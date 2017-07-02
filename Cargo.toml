@@ -1,6 +1,6 @@
 [package]
 name = "atom_syndication"
-version = "0.5.2"
+version = "0.5.3"
 authors = ["James Hurst <jh.jameshurst@gmail.com>"]
 description = "Library for serializing the Atom web content syndication format"
 repository = "https://github.com/rust-syndication/atom"
