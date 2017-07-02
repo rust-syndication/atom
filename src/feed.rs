@@ -699,6 +699,7 @@ impl ToXml for Feed {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"feed";
         let mut element = BytesStart::borrowed(name, name.len());
+        element.push_attribute(("xmlns".as_bytes(), "http://www.w3.org/2005/Atom".as_bytes()));
 
         for (ns, uri) in &self.namespaces {
             element.push_attribute((format!("xmlns:{}", ns).as_bytes(), uri.as_bytes()));
