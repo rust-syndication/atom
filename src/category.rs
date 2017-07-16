@@ -12,6 +12,7 @@ use toxml::ToXml;
 
 /// Represents a category in an Atom feed
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
+#[builder(setter(into), default)]
 pub struct Category {
     /// Identifies the category.
     term: String,

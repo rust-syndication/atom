@@ -15,6 +15,7 @@ pub type ExtensionMap = HashMap<String, HashMap<String, Vec<Extension>>>;
 
 /// A namespaced extension.
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
+#[builder(setter(into), default)]
 pub struct Extension {
     /// The qualified name of the extension element.
     name: String,

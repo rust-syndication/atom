@@ -20,6 +20,7 @@ use util::atom_text;
 
 /// Represents an entry in an Atom feed
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
+#[builder(setter(into), default)]
 pub struct Entry {
     /// A human-readable title for the entry.
     title: String,

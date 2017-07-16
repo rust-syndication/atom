@@ -12,6 +12,7 @@ use toxml::ToXml;
 
 /// Represents a link in an Atom feed
 #[derive(Debug, Clone, PartialEq, Builder)]
+#[builder(setter(into), default)]
 pub struct Link {
     /// The URI of the referenced resource.
     href: String,

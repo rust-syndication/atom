@@ -13,6 +13,7 @@ use util::atom_text;
 
 /// Represents the generator of an Atom feed
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
+#[builder(setter(into), default)]
 pub struct Generator {
     /// The name of the generator.
     value: String,
