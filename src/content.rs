@@ -154,7 +154,7 @@ impl ToXml for Content {
 
         if let Some(ref content_type) = self.content_type {
             if content_type == "xhtml" {
-                element.push_attribute(("type", "html"));
+                element.push_attribute(("type", "xhtml"));
             } else {
                 element.push_attribute(("type", &**content_type));
             }
