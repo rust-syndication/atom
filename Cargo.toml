@@ -12,5 +12,5 @@ categories = ["parser-implementations"]
 include = ["src/*", "Cargo.toml", "LICENSE-MIT", "LICENSE-APACHE", "README.md"]
 
 [dependencies]
-quick-xml = "0.8"
+quick-xml = "0.10"
 derive_builder = "0.5"
