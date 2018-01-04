@@ -9,7 +9,7 @@ use quick_xml::writer::Writer;
 use error::Error;
 use fromxml::FromXml;
 use toxml::ToXml;
-use util::atom_text;
+use util::atom_any_text;
 
 /// Represents the content of an Atom entry
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
@@ -141,7 +141,7 @@ impl FromXml for Content {
             }
         }
 
-        content.value = atom_text(reader)?;
+        content.value = atom_any_text(reader, atts)?;
 
         Ok(content)
     }

@@ -18,7 +18,7 @@ use generator::Generator;
 use link::Link;
 use person::Person;
 use toxml::{ToXml, WriterExt};
-use util::atom_text;
+use util::{atom_text, atom_any_text};
 
 /// Represents an Atom feed
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
@@ -71,7 +71,7 @@ impl Feed {
     /// ```
     pub fn read_from<B: BufRead>(reader: B) -> Result<Feed, Error> {
         let mut reader = Reader::from_reader(reader);
-        reader.trim_text(true).expand_empty_elements(true);
+        reader.expand_empty_elements(true);
 
         let mut buf = Vec::new();
 
@@ -638,7 +638,7 @@ impl FromXml for Feed {
             match reader.read_event(&mut buf)? {
                 Event::Start(element) => {
                     match element.name() {
-                        b"title" => feed.title = atom_text(reader)?.unwrap_or_default(),
+                        b"title" => feed.title = atom_any_text(reader, element.attributes())?.unwrap_or_default(),
                         b"id" => feed.id = atom_text(reader)?.unwrap_or_default(),
                         b"updated" => feed.updated = atom_text(reader)?.unwrap_or_default(),
                         b"author" => {

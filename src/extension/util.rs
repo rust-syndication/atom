@@ -90,7 +90,7 @@ fn parse_extension_element<R: BufRead>(
                 extension.value = Some(reader.decode(&element).into_owned());
             }
             Event::Text(element) => {
-                extension.value = Some(element.unescape_and_decode(reader)?);
+                extension.value = Some(element.unescape_and_decode(reader)?.trim().to_string());
             }
             Event::End(element) => {
                 extension.name = reader.decode(element.name()).into_owned();
