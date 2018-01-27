@@ -1,5 +1,5 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 	<entry>
-		<content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>Entry content</p></div></content>
+		<content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>Entry content <a href="https://example.com/">with a link</a> inside.</p></div></content>
 	</entry>
 </feed>

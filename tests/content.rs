@@ -76,7 +76,7 @@ fn content_text_xhtml() {
     let content = feed.entries().first().unwrap().content().unwrap();
     assert_eq!(
         content.value(),
-        Some("<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Entry content</p></div>",)
+        Some(r#"<div xmlns="http://www.w3.org/1999/xhtml"><p>Entry content <a href="https://example.com/">with a link</a> inside.</p></div>"#)
     );
     assert_eq!(content.content_type(), Some("xhtml"));
 }
