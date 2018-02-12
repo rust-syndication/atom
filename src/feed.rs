@@ -21,6 +21,8 @@ use toxml::{ToXml, WriterExt};
 use util::{atom_text, atom_any_text};
 
 /// Represents an Atom feed
+
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
 #[builder(setter(into), default)]
 pub struct Feed {

@@ -11,6 +11,7 @@ use fromxml::FromXml;
 use toxml::ToXml;
 
 /// Represents a link in an Atom feed
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Clone, PartialEq, Builder)]
 #[builder(setter(into), default)]
 pub struct Link {

@@ -16,6 +16,7 @@ use toxml::{ToXml, WriterExt};
 use util::atom_text;
 
 /// Represents the source of an Atom entry
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
 #[builder(setter(into), default)]
 pub struct Source {

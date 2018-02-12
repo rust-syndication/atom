@@ -12,6 +12,7 @@ use toxml::ToXml;
 use util::atom_any_text;
 
 /// Represents the content of an Atom entry
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
 #[builder(setter(into), default)]
 pub struct Content {

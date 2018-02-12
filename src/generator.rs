@@ -12,6 +12,7 @@ use toxml::ToXml;
 use util::atom_text;
 
 /// Represents the generator of an Atom feed
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
 #[builder(setter(into), default)]
 pub struct Generator {
