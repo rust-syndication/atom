@@ -45,6 +45,10 @@
 //! let string = feed.to_string();
 //! ```
 
+#[cfg(feature = "serde")]
+#[macro_use]
+extern crate serde;
+
 #[macro_use]
 extern crate derive_builder;
 

@@ -14,6 +14,7 @@ pub(crate) mod util;
 pub type ExtensionMap = HashMap<String, HashMap<String, Vec<Extension>>>;
 
 /// A namespaced extension.
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
 #[builder(setter(into), default)]
 pub struct Extension {

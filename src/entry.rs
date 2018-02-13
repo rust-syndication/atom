@@ -19,6 +19,7 @@ use toxml::{ToXml, WriterExt};
 use util::atom_text;
 
 /// Represents an entry in an Atom feed
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Default, Clone, PartialEq, Builder)]
 #[builder(setter(into), default)]
 pub struct Entry {
