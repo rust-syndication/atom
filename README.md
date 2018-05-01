@@ -1,7 +1,7 @@
 # atom
 
 [![Build Status](https://travis-ci.org/rust-syndication/atom.svg?branch=master)](https://travis-ci.org/rust-syndication/atom)
-[![Crates.io Status](http://meritbadge.herokuapp.com/atom_syndication)](https://crates.io/crates/atom_syndication)
+[![Crates.io Status](	https://img.shields.io/crates/v/atom_syndication.svg)](https://crates.io/crates/atom_syndication)
 
 Library for serializing the Atom web content syndication format.
 
