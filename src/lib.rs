@@ -52,6 +52,9 @@ extern crate serde;
 #[macro_use]
 extern crate derive_builder;
 
+#[macro_use]
+extern crate failure;
+
 extern crate quick_xml;
 
 mod feed;
