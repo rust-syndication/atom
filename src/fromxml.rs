@@ -1,7 +1,7 @@
 use std::io::BufRead;
 
 use quick_xml::events::attributes::Attributes;
-use quick_xml::reader::Reader;
+use quick_xml::Reader;
 
 use error::Error;
 

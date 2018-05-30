@@ -1,10 +1,10 @@
 use std::io::{BufRead, Write};
 
-use quick_xml::errors::Error as XmlError;
+use quick_xml::Error as XmlError;
 use quick_xml::events::{Event, BytesStart, BytesEnd};
 use quick_xml::events::attributes::Attributes;
-use quick_xml::reader::Reader;
-use quick_xml::writer::Writer;
+use quick_xml::Reader;
+use quick_xml::Writer;
 
 use error::Error;
 use fromxml::FromXml;

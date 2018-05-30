@@ -1,10 +1,10 @@
 use std::io::{BufRead, Write};
 
-use quick_xml::errors::Error as XmlError;
+use quick_xml::Error as XmlError;
 use quick_xml::events::{Event, BytesStart, BytesEnd, BytesText};
 use quick_xml::events::attributes::Attributes;
-use quick_xml::reader::Reader;
-use quick_xml::writer::Writer;
+use quick_xml::Reader;
+use quick_xml::Writer;
 
 use error::Error;
 use fromxml::FromXml;
@@ -158,7 +158,7 @@ impl ToXml for Generator {
 
         writer.write_event(Event::Start(element))?;
         writer
-            .write_event(Event::Text(BytesText::borrowed(self.value.as_bytes())))?;
+            .write_event(Event::Text(BytesText::from_escaped(self.value.as_bytes())))?;
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
 
         Ok(())
