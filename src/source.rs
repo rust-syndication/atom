@@ -13,11 +13,11 @@ use generator::Generator;
 use link::Link;
 use person::Person;
 use toxml::{ToXml, WriterExt};
-use util::atom_text;
+use util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
 
 /// Represents the source of an Atom entry
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Default, Clone, PartialEq, Builder)]
+#[derive(Debug, Clone, PartialEq, Builder)]
 #[builder(setter(into), default)]
 pub struct Source {
     /// A human-readable title for the feed.
@@ -25,7 +25,7 @@ pub struct Source {
     /// A universally unique and permanent URI.
     id: String,
     /// The last time the feed was modified in a significant way.
-    updated: String,
+    updated: FixedDateTime,
     /// The authors of the feed.
     authors: Vec<Person>,
     /// The categories that the feed belongs to.
@@ -122,8 +122,8 @@ impl Source {
     /// source.set_updated("2017-06-03T15:15:44-05:00");
     /// assert_eq!(source.updated(), "2017-06-03T15:15:44-05:00");
     /// ```
-    pub fn updated(&self) -> &str {
-        self.updated.as_str()
+    pub fn updated(&self) -> &FixedDateTime {
+        &self.updated
     }
 
     /// Set the last time that the source feed was modified.
@@ -137,8 +137,8 @@ impl Source {
     /// source.set_updated("2017-06-03T15:15:44-05:00");
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
-    where
-        V: Into<String>,
+        where
+            V: Into<FixedDateTime>,
     {
         self.updated = updated.into();
     }
@@ -443,7 +443,7 @@ impl FromXml for Source {
                     match element.name() {
                         b"id" => source.id = atom_text(reader)?.unwrap_or_default(),
                         b"title" => source.title = atom_text(reader)?.unwrap_or_default(),
-                        b"updated" => source.updated = atom_text(reader)?.unwrap_or_default(),
+                        b"updated" => source.updated = atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime),
                         b"author" => {
                             source
                                 .authors
@@ -494,7 +494,7 @@ impl ToXml for Source {
             .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
         writer.write_text_element(b"title", &*self.title)?;
         writer.write_text_element(b"id", &*self.id)?;
-        writer.write_text_element(b"updated", &*self.updated)?;
+        writer.write_text_element(b"updated", &self.updated.to_rfc3339())?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
         writer
@@ -525,5 +525,15 @@ impl ToXml for Source {
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
 
         Ok(())
+    }
+}
+
+#[allow(unconditional_recursion)]
+impl Default for Source {
+    fn default() -> Self {
+        Source {
+            updated: default_fixed_datetime(),
+            ..Default::default()
+        }
     }
 }

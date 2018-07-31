@@ -16,11 +16,11 @@ use link::Link;
 use person::Person;
 use source::Source;
 use toxml::{ToXml, WriterExt};
-use util::atom_text;
+use util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
 
 /// Represents an entry in an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Default, Clone, PartialEq, Builder)]
+#[derive(Debug, Clone, PartialEq, Builder)]
 #[builder(setter(into), default)]
 pub struct Entry {
     /// A human-readable title for the entry.
@@ -28,7 +28,7 @@ pub struct Entry {
     /// A universally unique and permanent URI.
     id: String,
     /// The last time the entry was modified.
-    updated: String,
+    updated: FixedDateTime,
     /// The authors of the feed.
     authors: Vec<Person>,
     /// The categories that the entry belongs to.
@@ -38,7 +38,7 @@ pub struct Entry {
     /// The Web pages related to the entry.
     links: Vec<Link>,
     /// The time of the initial creation or first availability of the entry.
-    published: Option<String>,
+    published: Option<FixedDateTime>,
     /// Information about rights held in and over the entry.
     rights: Option<String>,
     /// The source information if an entry is copied from one feed into another feed.
@@ -127,8 +127,8 @@ impl Entry {
     /// entry.set_updated("2017-06-03T15:15:44-05:00");
     /// assert_eq!(entry.updated(), "2017-06-03T15:15:44-05:00");
     /// ```
-    pub fn updated(&self) -> &str {
-        self.updated.as_str()
+    pub fn updated(&self) -> &FixedDateTime {
+        &self.updated
     }
 
     /// Set the last time that this entry was modified.
@@ -142,8 +142,8 @@ impl Entry {
     /// entry.set_updated("2017-06-03T15:15:44-05:00");
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
-    where
-        V: Into<String>,
+        where
+            V: Into<FixedDateTime>,
     {
         self.updated = updated.into();
     }
@@ -287,8 +287,8 @@ impl Entry {
     /// entry.set_published("2017-06-01T15:15:44-05:00".to_string());
     /// assert_eq!(entry.published(), Some("2017-06-01T15:15:44-05:00"));
     /// ```
-    pub fn published(&self) -> Option<&str> {
-        self.published.as_ref().map(|s| s.as_str())
+    pub fn published(&self) -> Option<&FixedDateTime> {
+        self.published.as_ref()
     }
 
     /// Set the time that this entry was initially created or first made available.
@@ -303,7 +303,7 @@ impl Entry {
     /// ```
     pub fn set_published<V>(&mut self, published: V)
     where
-        V: Into<Option<String>>,
+        V: Into<Option<FixedDateTime>>,
     {
         self.published = published.into();
     }
@@ -496,7 +496,7 @@ impl FromXml for Entry {
                     match element.name() {
                         b"id" => entry.id = atom_text(reader)?.unwrap_or_default(),
                         b"title" => entry.title = atom_text(reader)?.unwrap_or_default(),
-                        b"updated" => entry.updated = atom_text(reader)?.unwrap_or_default(),
+                        b"updated" => entry.updated = atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime),
                         b"author" => {
                             entry
                                 .authors
@@ -517,7 +517,7 @@ impl FromXml for Entry {
                                 .links
                                 .push(Link::from_xml(reader, element.attributes())?)
                         }
-                        b"published" => entry.published = atom_text(reader)?,
+                        b"published" => entry.published = atom_datetime(reader)?,
                         b"rights" => entry.rights = atom_text(reader)?,
                         b"source" => {
                             entry.source = Some(Source::from_xml(reader, element.attributes())?)
@@ -560,7 +560,7 @@ impl ToXml for Entry {
             .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
         writer.write_text_element(b"title", &*self.title)?;
         writer.write_text_element(b"id", &*self.id)?;
-        writer.write_text_element(b"updated", &*self.updated)?;
+        writer.write_text_element(b"updated", &*self.updated.to_rfc3339())?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
         writer
@@ -568,7 +568,7 @@ impl ToXml for Entry {
         writer.write_objects(&self.links)?;
 
         if let Some(ref published) = self.published {
-            writer.write_text_element(b"published", &**published)?;
+            writer.write_text_element(b"published", &published.to_rfc3339())?;
         }
 
         if let Some(ref rights) = self.rights {
@@ -596,5 +596,15 @@ impl ToXml for Entry {
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
 
         Ok(())
+    }
+}
+
+#[allow(unconditional_recursion)]
+impl Default for Entry {
+    fn default() -> Self {
+        Entry {
+            updated: default_fixed_datetime(),
+            ..Default::default()
+        }
     }
 }

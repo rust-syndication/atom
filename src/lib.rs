@@ -57,6 +57,8 @@ extern crate failure;
 
 extern crate quick_xml;
 
+extern crate chrono;
+
 mod feed;
 mod category;
 mod content;

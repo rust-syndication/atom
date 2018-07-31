@@ -18,12 +18,11 @@ use generator::Generator;
 use link::Link;
 use person::Person;
 use toxml::{ToXml, WriterExt};
-use util::{atom_text, atom_any_text};
+use util::{atom_any_text, atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
 
 /// Represents an Atom feed
-
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Default, Clone, PartialEq, Builder)]
+#[derive(Debug, Clone, PartialEq, Builder)]
 #[builder(setter(into), default)]
 pub struct Feed {
     /// A human-readable title for the feed.
@@ -31,7 +30,7 @@ pub struct Feed {
     /// A universally unique and permanent URI.
     id: String,
     /// The last time the feed was modified in a significant way.
-    updated: String,
+    updated: FixedDateTime,
     /// The authors of the feed.
     authors: Vec<Person>,
     /// The categories that the feed belongs to.
@@ -205,8 +204,8 @@ impl Feed {
     /// feed.set_updated("2017-06-03T15:15:44-05:00");
     /// assert_eq!(feed.updated(), "2017-06-03T15:15:44-05:00");
     /// ```
-    pub fn updated(&self) -> &str {
-        self.updated.as_str()
+    pub fn updated(&self) -> &FixedDateTime {
+        &self.updated
     }
 
     /// Set the last time that this feed was modified.
@@ -220,8 +219,8 @@ impl Feed {
     /// feed.set_updated("2017-06-03T15:15:44-05:00");
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
-    where
-        V: Into<String>,
+        where
+            V: Into<FixedDateTime>,
     {
         self.updated = updated.into();
     }
@@ -642,7 +641,7 @@ impl FromXml for Feed {
                     match element.name() {
                         b"title" => feed.title = atom_any_text(reader, element.attributes())?.unwrap_or_default(),
                         b"id" => feed.id = atom_text(reader)?.unwrap_or_default(),
-                        b"updated" => feed.updated = atom_text(reader)?.unwrap_or_default(),
+                        b"updated" => feed.updated = atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime),
                         b"author" => {
                             feed.authors
                                 .push(Person::from_xml(reader, element.attributes())?)
@@ -702,10 +701,7 @@ impl ToXml for Feed {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"feed";
         let mut element = BytesStart::borrowed(name, name.len());
-        element.push_attribute((
-            "xmlns".as_bytes(),
-            "http://www.w3.org/2005/Atom".as_bytes(),
-        ));
+        element.push_attribute(("xmlns", "http://www.w3.org/2005/Atom"));
 
         for (ns, uri) in &self.namespaces {
             element.push_attribute((format!("xmlns:{}", ns).as_bytes(), uri.as_bytes()));
@@ -714,7 +710,7 @@ impl ToXml for Feed {
         writer.write_event(Event::Start(element))?;
         writer.write_text_element(b"title", &*self.title)?;
         writer.write_text_element(b"id", &*self.id)?;
-        writer.write_text_element(b"updated", &*self.updated)?;
+        writer.write_text_element(b"updated", &*self.updated.to_rfc3339())?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
         writer
@@ -769,5 +765,15 @@ impl ToString for Feed {
         let buf = self.write_to(Vec::new()).unwrap_or_default();
         // this unwrap should be safe since the bytes written from the Feed are all valid utf8
         String::from_utf8(buf).unwrap()
+    }
+}
+
+#[allow(unconditional_recursion)]
+impl Default for Feed {
+    fn default() -> Self {
+        Feed {
+            updated: default_fixed_datetime(),
+            ..Default::default()
+        }
     }
 }
