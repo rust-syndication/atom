@@ -117,10 +117,12 @@ impl Source {
     ///
     /// ```
     /// use atom_syndication::Source;
+    /// use atom_syndication::FixedDateTime;
+    /// use std::str::FromStr;
     ///
     /// let mut source = Source::default();
-    /// source.set_updated("2017-06-03T15:15:44-05:00");
-    /// assert_eq!(source.updated(), "2017-06-03T15:15:44-05:00");
+    /// source.set_updated(FixedDateTime::from_str("2017-06-03T15:15:44-05:00").unwrap());
+    /// assert_eq!(source.updated().to_rfc3339(), "2017-06-03T15:15:44-05:00");
     /// ```
     pub fn updated(&self) -> &FixedDateTime {
         &self.updated
@@ -132,9 +134,11 @@ impl Source {
     ///
     /// ```
     /// use atom_syndication::Source;
+    /// use atom_syndication::FixedDateTime;
+    /// use std::str::FromStr;
     ///
     /// let mut source = Source::default();
-    /// source.set_updated("2017-06-03T15:15:44-05:00");
+    /// source.set_updated(FixedDateTime::from_str("2017-06-03T15:15:44-05:00").unwrap());
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
         where
@@ -528,12 +532,21 @@ impl ToXml for Source {
     }
 }
 
-#[allow(unconditional_recursion)]
 impl Default for Source {
     fn default() -> Self {
         Source {
+            title: String::new(),
+            id: String::new(),
             updated: default_fixed_datetime(),
-            ..Default::default()
+            authors: Vec::new(),
+            categories: Vec::new(),
+            contributors: Vec::new(),
+            generator: None,
+            icon: None,
+            links: Vec::new(),
+            logo: None,
+            rights: None,
+            subtitle: None,
         }
     }
 }

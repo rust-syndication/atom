@@ -122,10 +122,12 @@ impl Entry {
     ///
     /// ```
     /// use atom_syndication::Entry;
+    /// use atom_syndication::FixedDateTime;
+    /// use std::str::FromStr;
     ///
     /// let mut entry = Entry::default();
-    /// entry.set_updated("2017-06-03T15:15:44-05:00");
-    /// assert_eq!(entry.updated(), "2017-06-03T15:15:44-05:00");
+    /// entry.set_updated(FixedDateTime::from_str("2017-06-03T15:15:44-05:00").unwrap());
+    /// assert_eq!(entry.updated().to_rfc3339(), "2017-06-03T15:15:44-05:00");
     /// ```
     pub fn updated(&self) -> &FixedDateTime {
         &self.updated
@@ -137,9 +139,11 @@ impl Entry {
     ///
     /// ```
     /// use atom_syndication::Entry;
+    /// use atom_syndication::FixedDateTime;
+    /// use std::str::FromStr;
     ///
     /// let mut entry = Entry::default();
-    /// entry.set_updated("2017-06-03T15:15:44-05:00");
+    /// entry.set_updated(FixedDateTime::from_str("2017-06-03T15:15:44-05:00").unwrap());
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
         where
@@ -282,10 +286,12 @@ impl Entry {
     ///
     /// ```
     /// use atom_syndication::Entry;
+    /// use atom_syndication::FixedDateTime;
+    /// use std::str::FromStr;
     ///
     /// let mut entry = Entry::default();
-    /// entry.set_published("2017-06-01T15:15:44-05:00".to_string());
-    /// assert_eq!(entry.published(), Some("2017-06-01T15:15:44-05:00"));
+    /// entry.set_published(FixedDateTime::from_str("2017-06-01T15:15:44-05:00").unwrap());
+    /// assert_eq!(entry.published().map(|x|x.to_rfc3339()), Some("2017-06-01T15:15:44-05:00".to_string()));
     /// ```
     pub fn published(&self) -> Option<&FixedDateTime> {
         self.published.as_ref()
@@ -297,13 +303,15 @@ impl Entry {
     ///
     /// ```
     /// use atom_syndication::Entry;
+    /// use atom_syndication::FixedDateTime;
+    /// use std::str::FromStr;
     ///
     /// let mut entry = Entry::default();
-    /// entry.set_published("2017-06-01T15:15:44-05:00".to_string());
+    /// entry.set_published(FixedDateTime::from_str("2017-06-01T15:15:44-05:00").unwrap());
     /// ```
     pub fn set_published<V>(&mut self, published: V)
-    where
-        V: Into<Option<FixedDateTime>>,
+        where
+            V: Into<Option<FixedDateTime>>,
     {
         self.published = published.into();
     }
@@ -599,12 +607,22 @@ impl ToXml for Entry {
     }
 }
 
-#[allow(unconditional_recursion)]
 impl Default for Entry {
     fn default() -> Self {
         Entry {
+            title: String::new(),
+            id: String::new(),
             updated: default_fixed_datetime(),
-            ..Default::default()
+            authors: Vec::new(),
+            categories: Vec::new(),
+            contributors: Vec::new(),
+            links: Vec::new(),
+            published: None,
+            rights: None,
+            source: None,
+            summary: None,
+            content: None,
+            extensions: ExtensionMap::default(),
         }
     }
 }

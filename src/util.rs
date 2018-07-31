@@ -7,6 +7,7 @@ use quick_xml::Reader;
 use error::Error;
 use std::str::FromStr;
 
+/// Alias of `::chrono::DateTime<::chrono::FixedOffset>`
 pub type FixedDateTime = ::chrono::DateTime<::chrono::FixedOffset>;
 
 pub fn default_fixed_datetime() -> FixedDateTime {

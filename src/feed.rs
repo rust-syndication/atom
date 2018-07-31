@@ -199,10 +199,12 @@ impl Feed {
     ///
     /// ```
     /// use atom_syndication::Feed;
+    /// use atom_syndication::FixedDateTime;
+    /// use std::str::FromStr;
     ///
     /// let mut feed = Feed::default();
-    /// feed.set_updated("2017-06-03T15:15:44-05:00");
-    /// assert_eq!(feed.updated(), "2017-06-03T15:15:44-05:00");
+    /// feed.set_updated(FixedDateTime::from_str("2017-06-03T15:15:44-05:00").unwrap());
+    /// assert_eq!(feed.updated().to_rfc3339(), "2017-06-03T15:15:44-05:00");
     /// ```
     pub fn updated(&self) -> &FixedDateTime {
         &self.updated
@@ -214,9 +216,11 @@ impl Feed {
     ///
     /// ```
     /// use atom_syndication::Feed;
+    /// use atom_syndication::FixedDateTime;
+    /// use std::str::FromStr;
     ///
     /// let mut feed = Feed::default();
-    /// feed.set_updated("2017-06-03T15:15:44-05:00");
+    /// feed.set_updated(FixedDateTime::from_str("2017-06-03T15:15:44-05:00").unwrap());
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
         where
@@ -768,12 +772,24 @@ impl ToString for Feed {
     }
 }
 
-#[allow(unconditional_recursion)]
 impl Default for Feed {
     fn default() -> Self {
         Feed {
+            title: String::new(),
+            id: String::new(),
             updated: default_fixed_datetime(),
-            ..Default::default()
+            authors: Vec::new(),
+            categories: Vec::new(),
+            contributors: Vec::new(),
+            generator: None,
+            icon: None,
+            links: Vec::new(),
+            logo: None,
+            rights: None,
+            subtitle: None,
+            entries: Vec::new(),
+            extensions: ExtensionMap::default(),
+            namespaces: HashMap::default(),
         }
     }
 }
