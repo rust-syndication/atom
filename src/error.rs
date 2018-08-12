@@ -1,5 +1,3 @@
-use std::error::Error as StdError;
-use std::fmt;
 use std::str::Utf8Error;
 
 use quick_xml::Error as XmlError;
@@ -19,6 +17,9 @@ pub enum Error {
     /// Unexpected end of input.
     #[fail(display = "unexpected end of input")]
     Eof,
+    /// The format of the timestamp is wrong.
+    #[fail(display = "timestamps must be formatted by RFC3339, rather than {}", _0)]
+    WrongDatetime(String),
 }
 
 impl From<XmlError> for Error {
