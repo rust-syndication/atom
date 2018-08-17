@@ -19,7 +19,7 @@ fn read_feed() {
     let feed = feed!("tests/data/feed.xml");
     assert_eq!(feed.title(), "Feed Title");
     assert_eq!(feed.id(), "urn:uuid:60a76c80-d399-11d9-b91C-0003939e0af6");
-    assert_eq!(feed.updated(), "2017-06-03T15:15:44-05:00");
+    assert_eq!(feed.updated().to_rfc3339(), "2017-06-03T15:15:44-05:00");
     assert_eq!(feed.icon(), Some("http://example.com/icon.png"));
     assert_eq!(feed.logo(), Some("http://example.com/logo.png"));
     assert_eq!(feed.rights(), Some("© 2017 John Doe"));
@@ -39,12 +39,12 @@ fn read_entry() {
     let entry = feed.entries().first().unwrap();
     assert_eq!(entry.title(), "Entry Title");
     assert_eq!(entry.id(), "http://example.com/article/1");
-    assert_eq!(entry.updated(), "2017-06-03T15:15:44-05:00");
+    assert_eq!(entry.updated().to_rfc3339(), "2017-06-03T15:15:44-05:00");
     assert_eq!(entry.authors().len(), 2);
     assert_eq!(entry.categories().len(), 2);
     assert_eq!(entry.contributors().len(), 2);
     assert_eq!(entry.links().len(), 2);
-    assert_eq!(entry.published(), Some("2017-06-01T15:15:44-05:00"));
+    assert_eq!(entry.published().map(|x| x.to_rfc3339()), Some("2017-06-01T15:15:44-05:00".to_string()));
     assert_eq!(entry.summary(), Some("Entry summary"));
     assert_eq!(entry.rights(), Some("© 2017 John Doe"));
 
@@ -101,7 +101,7 @@ fn read_source() {
     let source = entry.source().unwrap();
     assert_eq!(source.title(), "Feed Title");
     assert_eq!(source.id(), "urn:uuid:60a76c80-d399-11d9-b91C-0003939e0af6");
-    assert_eq!(source.updated(), "2017-06-03T15:15:44-05:00");
+    assert_eq!(source.updated().to_rfc3339(), "2017-06-03T15:15:44-05:00");
     assert_eq!(source.icon(), Some("http://example.com/icon.png"));
     assert_eq!(source.logo(), Some("http://example.com/logo.png"));
     assert_eq!(source.rights(), Some("© 2017 John Doe"));

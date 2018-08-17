@@ -5,6 +5,14 @@ use quick_xml::events::attributes::{Attribute, Attributes};
 use quick_xml::Reader;
 
 use error::Error;
+use std::str::FromStr;
+
+/// Alias of `::chrono::DateTime<::chrono::FixedOffset>`
+pub type FixedDateTime = ::chrono::DateTime<::chrono::FixedOffset>;
+
+pub fn default_fixed_datetime() -> FixedDateTime {
+    FixedDateTime::from_str("1970-01-01T00:00:00Z").unwrap()
+}
 
 fn non_empty(string: String) -> Option<String> {
     if !string.is_empty() {
@@ -139,5 +147,17 @@ pub fn atom_any_text<B: BufRead>(reader: &mut Reader<B>, mut atts: Attributes) -
     match content_type {
         Some(ref t) if t == "xhtml" => atom_xhtml(reader),
         _ => atom_text(reader)
+    }
+}
+
+pub fn atom_datetime<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<FixedDateTime>, Error> {
+    if let Some(datetime_text) = atom_text(reader)? {
+        let parse_result = FixedDateTime::parse_from_rfc3339(&datetime_text);
+        match parse_result {
+            Err(_) => Err(Error::WrongDatetime(datetime_text)),
+            Ok(datetime) => Ok(Some(datetime)),
+        }
+    } else {
+        Ok(None)
     }
 }

@@ -57,6 +57,8 @@ extern crate failure;
 
 extern crate quick_xml;
 
+extern crate chrono;
+
 mod feed;
 mod category;
 mod content;
@@ -83,3 +85,4 @@ pub use link::{Link, LinkBuilder};
 pub use person::{Person, PersonBuilder};
 pub use source::{Source, SourceBuilder};
 pub use error::Error;
+pub use util::FixedDateTime;
