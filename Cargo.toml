@@ -15,5 +15,5 @@ include = ["src/*", "Cargo.toml", "LICENSE-MIT", "LICENSE-APACHE", "README.md"]
 quick-xml = "0.12"
 derive_builder = "0.5"
 serde = { version = "1.0", optional = true, features = ["derive"] }
-failure = "0.1.1"
-chrono = "0.4.5"
+failure = "0.1"
+chrono = { version = "0.4", features = ["serde"] }

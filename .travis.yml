@@ -9,4 +9,6 @@ rust:
 
 script:
   - cargo build --verbose
+  - cargo build --features=serde --verbose
   - cargo test --verbose
+  - cargo test --features=serde --verbose
