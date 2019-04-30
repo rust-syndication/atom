@@ -68,7 +68,7 @@ impl Category {
     /// assert_eq!(category.scheme(), Some("http://example.com/scheme"));
     /// ```
     pub fn scheme(&self) -> Option<&str> {
-        self.scheme.as_ref().map(|s| s.as_str())
+        self.scheme.as_ref().map(String::as_str)
     }
 
     /// Set the categorization scheme URI.
@@ -101,7 +101,7 @@ impl Category {
     /// ```
 
     pub fn label(&self) -> Option<&str> {
-        self.label.as_ref().map(|s| s.as_str())
+        self.label.as_ref().map(String::as_str)
     }
 
     /// Set the label for this category.
