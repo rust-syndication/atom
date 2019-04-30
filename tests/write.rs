@@ -1,16 +1,16 @@
 extern crate atom_syndication as atom;
 
-use std::io::BufReader;
 use std::fs::File;
+use std::io::BufReader;
 
 use crate::atom::Feed;
 
 macro_rules! feed {
-    ($f:expr) => ({
+    ($f:expr) => {{
         let file = File::open($f).unwrap();
         let reader = BufReader::new(file);
         Feed::read_from(reader).unwrap()
-    })
+    }};
 }
 
 #[test]

@@ -8,7 +8,7 @@ rust:
   - stable
 
 script:
-  - cargo build --verbose
-  - cargo build --features=with-serde --verbose
-  - cargo test --verbose
-  - cargo test --features=with-serde --verbose
+  - cargo build --all-targets --verbose
+  - cargo test --all-targets --verbose
+  - cargo clippy --all-targets --all-features -- -D warnings
+  - cargo fmt --all -- --check

@@ -2,17 +2,17 @@ use std::collections::HashMap;
 use std::io::{BufRead, Write};
 use std::str::{self, FromStr};
 
-use quick_xml::Error as XmlError;
-use quick_xml::events::{Event, BytesStart, BytesEnd};
 use quick_xml::events::attributes::Attributes;
+use quick_xml::events::{BytesEnd, BytesStart, Event};
+use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
 use crate::category::Category;
 use crate::entry::Entry;
 use crate::error::Error;
-use crate::extension::ExtensionMap;
 use crate::extension::util::{extension_name, parse_extension};
+use crate::extension::ExtensionMap;
 use crate::fromxml::FromXml;
 use crate::generator::Generator;
 use crate::link::Link;
@@ -223,8 +223,8 @@ impl Feed {
     /// feed.set_updated(FixedDateTime::from_str("2017-06-03T15:15:44-05:00").unwrap());
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
-        where
-            V: Into<FixedDateTime>,
+    where
+        V: Into<FixedDateTime>,
     {
         self.updated = updated.into();
     }
@@ -641,54 +641,51 @@ impl FromXml for Feed {
 
         loop {
             match reader.read_event(&mut buf)? {
-                Event::Start(element) => {
-                    match element.name() {
-                        b"title" => feed.title = atom_any_text(reader, element.attributes())?.unwrap_or_default(),
-                        b"id" => feed.id = atom_text(reader)?.unwrap_or_default(),
-                        b"updated" => feed.updated = atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime),
-                        b"author" => {
-                            feed.authors
-                                .push(Person::from_xml(reader, element.attributes())?)
-                        }
-                        b"category" => {
-                            feed.categories
-                                .push(Category::from_xml(reader, element.attributes())?)
-                        }
-                        b"contributor" => {
-                            feed.contributors
-                                .push(Person::from_xml(reader, element.attributes())?)
-                        }
-                        b"generator" => {
-                            feed.generator =
-                                Some(Generator::from_xml(reader, element.attributes())?)
-                        }
-                        b"icon" => feed.icon = atom_text(reader)?,
-                        b"link" => {
-                            feed.links
-                                .push(Link::from_xml(reader, element.attributes())?)
-                        }
-                        b"logo" => feed.logo = atom_text(reader)?,
-                        b"rights" => feed.rights = atom_text(reader)?,
-                        b"subtitle" => feed.subtitle = atom_text(reader)?,
-                        b"entry" => {
-                            feed.entries
-                                .push(Entry::from_xml(reader, element.attributes())?)
-                        }
-                        n => {
-                            if let Some((ns, name)) = extension_name(element.name()) {
-                                parse_extension(
-                                    reader,
-                                    element.attributes(),
-                                    ns,
-                                    name,
-                                    &mut feed.extensions,
-                                )?;
-                            } else {
-                                reader.read_to_end(n, &mut Vec::new())?;
-                            }
+                Event::Start(element) => match element.name() {
+                    b"title" => {
+                        feed.title =
+                            atom_any_text(reader, element.attributes())?.unwrap_or_default()
+                    }
+                    b"id" => feed.id = atom_text(reader)?.unwrap_or_default(),
+                    b"updated" => {
+                        feed.updated = atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime)
+                    }
+                    b"author" => feed
+                        .authors
+                        .push(Person::from_xml(reader, element.attributes())?),
+                    b"category" => feed
+                        .categories
+                        .push(Category::from_xml(reader, element.attributes())?),
+                    b"contributor" => feed
+                        .contributors
+                        .push(Person::from_xml(reader, element.attributes())?),
+                    b"generator" => {
+                        feed.generator = Some(Generator::from_xml(reader, element.attributes())?)
+                    }
+                    b"icon" => feed.icon = atom_text(reader)?,
+                    b"link" => feed
+                        .links
+                        .push(Link::from_xml(reader, element.attributes())?),
+                    b"logo" => feed.logo = atom_text(reader)?,
+                    b"rights" => feed.rights = atom_text(reader)?,
+                    b"subtitle" => feed.subtitle = atom_text(reader)?,
+                    b"entry" => feed
+                        .entries
+                        .push(Entry::from_xml(reader, element.attributes())?),
+                    n => {
+                        if let Some((ns, name)) = extension_name(element.name()) {
+                            parse_extension(
+                                reader,
+                                element.attributes(),
+                                ns,
+                                name,
+                                &mut feed.extensions,
+                            )?;
+                        } else {
+                            reader.read_to_end(n, &mut Vec::new())?;
                         }
                     }
-                }
+                },
                 Event::End(_) => break,
                 Event::Eof => return Err(Error::Eof),
                 _ => {}
@@ -717,8 +714,7 @@ impl ToXml for Feed {
         writer.write_text_element(b"updated", &*self.updated.to_rfc3339())?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
-        writer
-            .write_objects_named(&self.contributors, "contributor")?;
+        writer.write_objects_named(&self.contributors, "contributor")?;
 
         if let Some(ref generator) = self.generator {
             writer.write_object(generator)?;

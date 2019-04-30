@@ -1,8 +1,8 @@
 use std::io::{BufRead, Write};
 
-use quick_xml::Error as XmlError;
-use quick_xml::events::{Event, BytesStart, BytesEnd, BytesText};
 use quick_xml::events::attributes::Attributes;
+use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
+use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
@@ -168,8 +168,7 @@ impl ToXml for Content {
         writer.write_event(Event::Start(element))?;
 
         if let Some(ref value) = self.value {
-            writer
-                .write_event(Event::Text(BytesText::from_escaped(value.as_bytes())))?;
+            writer.write_event(Event::Text(BytesText::from_escaped(value.as_bytes())))?;
         }
 
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
