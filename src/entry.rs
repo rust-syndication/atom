@@ -328,7 +328,7 @@ impl Entry {
     /// assert_eq!(entry.rights(), Some("© 2017 John Doe"));
     /// ```
     pub fn rights(&self) -> Option<&str> {
-        self.rights.as_ref().map(|s| s.as_str())
+        self.rights.as_ref().map(String::as_str)
     }
 
     /// Set the information about the rights held in and over this entry.
@@ -392,7 +392,7 @@ impl Entry {
     /// assert_eq!(entry.summary(), Some("Entry summary."));
     /// ```
     pub fn summary(&self) -> Option<&str> {
-        self.summary.as_ref().map(|s| s.as_str())
+        self.summary.as_ref().map(String::as_str)
     }
 
     /// Set the summary of this entry.

@@ -287,7 +287,7 @@ impl Source {
     /// assert_eq!(source.icon(), Some("http://example.com/icon.png"));
     /// ```
     pub fn icon(&self) -> Option<&str> {
-        self.icon.as_ref().map(|s| s.as_str())
+        self.icon.as_ref().map(String::as_str)
     }
 
     /// Set the icon for the source feed.
@@ -351,7 +351,7 @@ impl Source {
     /// assert_eq!(source.logo(), Some("http://example.com/logo.png"));
     /// ```
     pub fn logo(&self) -> Option<&str> {
-        self.logo.as_ref().map(|s| s.as_str())
+        self.logo.as_ref().map(String::as_str)
     }
 
     /// Set the logo for the source feed.
@@ -383,7 +383,7 @@ impl Source {
     /// assert_eq!(source.rights(), Some("© 2017 John Doe"));
     /// ```
     pub fn rights(&self) -> Option<&str> {
-        self.rights.as_ref().map(|s| s.as_str())
+        self.rights.as_ref().map(String::as_str)
     }
 
     /// Set the information about the rights held in and over the source feed.
@@ -415,7 +415,7 @@ impl Source {
     /// assert_eq!(source.subtitle(), Some("Feed subtitle"));
     /// ```
     pub fn subtitle(&self) -> Option<&str> {
-        self.subtitle.as_ref().map(|s| s.as_str())
+        self.subtitle.as_ref().map(String::as_str)
     }
 
     /// Set the description or subtitle of the source feed.

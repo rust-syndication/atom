@@ -69,7 +69,7 @@ impl Person {
     /// assert_eq!(person.email(), Some("johndoe@example.com"));
     /// ```
     pub fn email(&self) -> Option<&str> {
-        self.email.as_ref().map(|s| s.as_str())
+        self.email.as_ref().map(String::as_str)
     }
 
     /// Set the email address for this person.
@@ -101,7 +101,7 @@ impl Person {
     /// assert_eq!(person.uri(), Some("http://example.com"));
     /// ```
     pub fn uri(&self) -> Option<&str> {
-        self.uri.as_ref().map(|s| s.as_str())
+        self.uri.as_ref().map(String::as_str)
     }
 
     /// Set the Web page for this person.

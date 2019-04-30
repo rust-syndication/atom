@@ -119,7 +119,7 @@ impl Link {
     /// assert_eq!(link.hreflang(), Some("en"));
     /// ```
     pub fn hreflang(&self) -> Option<&str> {
-        self.hreflang.as_ref().map(|s| s.as_str())
+        self.hreflang.as_ref().map(String::as_str)
     }
 
     /// Set the language of the referenced resource.
@@ -151,7 +151,7 @@ impl Link {
     /// assert_eq!(link.mime_type(), Some("text/html"));
     /// ```
     pub fn mime_type(&self) -> Option<&str> {
-        self.mime_type.as_ref().map(|s| s.as_str())
+        self.mime_type.as_ref().map(String::as_str)
     }
 
     /// Set the MIME type of the referenced resource.
@@ -183,7 +183,7 @@ impl Link {
     /// assert_eq!(link.title(), Some("Article Title"));
     /// ```
     pub fn title(&self) -> Option<&str> {
-        self.title.as_ref().map(|s| s.as_str())
+        self.title.as_ref().map(String::as_str)
     }
 
     /// Set the title of the referenced resource.
@@ -215,7 +215,7 @@ impl Link {
     /// assert_eq!(link.length(), Some("1000"));
     /// ```
     pub fn length(&self) -> Option<&str> {
-        self.length.as_ref().map(|s| s.as_str())
+        self.length.as_ref().map(String::as_str)
     }
 
     /// Set the content length of the referenced resource in bytes.
