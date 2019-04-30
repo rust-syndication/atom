@@ -45,7 +45,7 @@ fn read_entry() {
     assert_eq!(entry.contributors().len(), 2);
     assert_eq!(entry.links().len(), 2);
     assert_eq!(
-        entry.published().map(|x| x.to_rfc3339()),
+        entry.published().map(chrono::DateTime::to_rfc3339),
         Some("2017-06-01T15:15:44-05:00".to_string())
     );
     assert_eq!(entry.summary(), Some("Entry summary"));
@@ -121,7 +121,7 @@ fn read_extension() {
     let entry = feed.entries().first().unwrap();
 
     assert_eq!(
-        feed.namespaces().get("ext").map(|s| s.as_str()),
+        feed.namespaces().get("ext").map(String::as_str),
         Some("http://example.com")
     );
 
@@ -132,7 +132,7 @@ fn read_extension() {
         assert!(map.contains_key("title"));
         let title = map.get("title").unwrap().first().unwrap();
         assert_eq!(title.value(), Some("Title"));
-        assert_eq!(title.attrs().get("type").map(|s| s.as_str()), Some("text"));
+        assert_eq!(title.attrs().get("type").map(String::as_str), Some("text"));
 
         assert!(map.contains_key("parent"));
         let parent = map.get("parent").unwrap().first().unwrap();
