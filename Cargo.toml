@@ -2,6 +2,7 @@
 name = "atom_syndication"
 version = "0.6.0"
 authors = ["James Hurst <jh.jameshurst@gmail.com>"]
+edition = "2018"
 description = "Library for serializing the Atom web content syndication format"
 repository = "https://github.com/rust-syndication/atom"
 documentation = "https://docs.rs/atom_syndication/"

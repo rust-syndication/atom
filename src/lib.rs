@@ -76,13 +76,13 @@ mod util;
 /// Types and functions for namespaced extensions.
 pub mod extension;
 
-pub use feed::{Feed, FeedBuilder};
-pub use category::{Category, CategoryBuilder};
-pub use content::{Content, ContentBuilder};
-pub use entry::{Entry, EntryBuilder};
-pub use generator::{Generator, GeneratorBuilder};
-pub use link::{Link, LinkBuilder};
-pub use person::{Person, PersonBuilder};
-pub use source::{Source, SourceBuilder};
-pub use error::Error;
-pub use util::FixedDateTime;
+pub use crate::feed::{Feed, FeedBuilder};
+pub use crate::category::{Category, CategoryBuilder};
+pub use crate::content::{Content, ContentBuilder};
+pub use crate::entry::{Entry, EntryBuilder};
+pub use crate::generator::{Generator, GeneratorBuilder};
+pub use crate::link::{Link, LinkBuilder};
+pub use crate::person::{Person, PersonBuilder};
+pub use crate::source::{Source, SourceBuilder};
+pub use crate::error::Error;
+pub use crate::util::FixedDateTime;

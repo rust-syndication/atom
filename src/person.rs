@@ -6,10 +6,10 @@ use quick_xml::events::attributes::Attributes;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
-use error::Error;
-use fromxml::FromXml;
-use toxml::{ToXmlNamed, WriterExt};
-use util::atom_text;
+use crate::error::Error;
+use crate::fromxml::FromXml;
+use crate::toxml::{ToXmlNamed, WriterExt};
+use crate::util::atom_text;
 
 /// Represents a person in an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]

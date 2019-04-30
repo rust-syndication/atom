@@ -3,8 +3,8 @@ extern crate atom_syndication as atom;
 use std::io::BufReader;
 use std::fs::File;
 
-use atom::Feed;
-use atom::extension::ExtensionMap;
+use crate::atom::Feed;
+use crate::atom::extension::ExtensionMap;
 
 macro_rules! feed {
     ($f:expr) => ({

@@ -6,7 +6,7 @@ use quick_xml::Error as XmlError;
 use quick_xml::events::{Event, BytesStart, BytesEnd, BytesText};
 use quick_xml::Writer;
 
-use toxml::ToXml;
+use crate::toxml::ToXml;
 
 pub(crate) mod util;
 
