@@ -18,7 +18,10 @@ pub enum Error {
     #[fail(display = "unexpected end of input")]
     Eof,
     /// The format of the timestamp is wrong.
-    #[fail(display = "timestamps must be formatted by RFC3339, rather than {}", _0)]
+    #[fail(
+        display = "timestamps must be formatted by RFC3339, rather than {}",
+        _0
+    )]
     WrongDatetime(String),
 }
 

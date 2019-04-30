@@ -1,16 +1,16 @@
 use std::io::{BufRead, Write};
 
-use quick_xml::Error as XmlError;
-use quick_xml::events::{Event, BytesStart, BytesEnd};
 use quick_xml::events::attributes::Attributes;
+use quick_xml::events::{BytesEnd, BytesStart, Event};
+use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
 use crate::category::Category;
 use crate::content::Content;
 use crate::error::Error;
-use crate::extension::ExtensionMap;
 use crate::extension::util::{extension_name, parse_extension};
+use crate::extension::ExtensionMap;
 use crate::fromxml::FromXml;
 use crate::link::Link;
 use crate::person::Person;
@@ -146,8 +146,8 @@ impl Entry {
     /// entry.set_updated(FixedDateTime::from_str("2017-06-03T15:15:44-05:00").unwrap());
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
-        where
-            V: Into<FixedDateTime>,
+    where
+        V: Into<FixedDateTime>,
     {
         self.updated = updated.into();
     }
@@ -310,8 +310,8 @@ impl Entry {
     /// entry.set_published(FixedDateTime::from_str("2017-06-01T15:15:44-05:00").unwrap());
     /// ```
     pub fn set_published<V>(&mut self, published: V)
-        where
-            V: Into<Option<FixedDateTime>>,
+    where
+        V: Into<Option<FixedDateTime>>,
     {
         self.published = published.into();
     }
@@ -500,55 +500,48 @@ impl FromXml for Entry {
 
         loop {
             match reader.read_event(&mut buf)? {
-                Event::Start(element) => {
-                    match element.name() {
-                        b"id" => entry.id = atom_text(reader)?.unwrap_or_default(),
-                        b"title" => entry.title = atom_text(reader)?.unwrap_or_default(),
-                        b"updated" => entry.updated = atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime),
-                        b"author" => {
-                            entry
-                                .authors
-                                .push(Person::from_xml(reader, element.attributes())?)
-                        }
-                        b"category" => {
-                            entry
-                                .categories
-                                .push(Category::from_xml(reader, element.attributes())?)
-                        }
-                        b"contributor" => {
-                            entry
-                                .contributors
-                                .push(Person::from_xml(reader, element.attributes())?)
-                        }
-                        b"link" => {
-                            entry
-                                .links
-                                .push(Link::from_xml(reader, element.attributes())?)
-                        }
-                        b"published" => entry.published = atom_datetime(reader)?,
-                        b"rights" => entry.rights = atom_text(reader)?,
-                        b"source" => {
-                            entry.source = Some(Source::from_xml(reader, element.attributes())?)
-                        }
-                        b"summary" => entry.summary = atom_text(reader)?,
-                        b"content" => {
-                            entry.content = Some(Content::from_xml(reader, element.attributes())?)
-                        }
-                        n => {
-                            if let Some((ns, name)) = extension_name(element.name()) {
-                                parse_extension(
-                                    reader,
-                                    element.attributes(),
-                                    ns,
-                                    name,
-                                    &mut entry.extensions,
-                                )?;
-                            } else {
-                                reader.read_to_end(n, &mut Vec::new())?;
-                            }
+                Event::Start(element) => match element.name() {
+                    b"id" => entry.id = atom_text(reader)?.unwrap_or_default(),
+                    b"title" => entry.title = atom_text(reader)?.unwrap_or_default(),
+                    b"updated" => {
+                        entry.updated =
+                            atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime)
+                    }
+                    b"author" => entry
+                        .authors
+                        .push(Person::from_xml(reader, element.attributes())?),
+                    b"category" => entry
+                        .categories
+                        .push(Category::from_xml(reader, element.attributes())?),
+                    b"contributor" => entry
+                        .contributors
+                        .push(Person::from_xml(reader, element.attributes())?),
+                    b"link" => entry
+                        .links
+                        .push(Link::from_xml(reader, element.attributes())?),
+                    b"published" => entry.published = atom_datetime(reader)?,
+                    b"rights" => entry.rights = atom_text(reader)?,
+                    b"source" => {
+                        entry.source = Some(Source::from_xml(reader, element.attributes())?)
+                    }
+                    b"summary" => entry.summary = atom_text(reader)?,
+                    b"content" => {
+                        entry.content = Some(Content::from_xml(reader, element.attributes())?)
+                    }
+                    n => {
+                        if let Some((ns, name)) = extension_name(element.name()) {
+                            parse_extension(
+                                reader,
+                                element.attributes(),
+                                ns,
+                                name,
+                                &mut entry.extensions,
+                            )?;
+                        } else {
+                            reader.read_to_end(n, &mut Vec::new())?;
                         }
                     }
-                }
+                },
                 Event::End(_) => break,
                 Event::Eof => return Err(Error::Eof),
                 _ => {}
@@ -564,15 +557,13 @@ impl FromXml for Entry {
 impl ToXml for Entry {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"entry";
-        writer
-            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
         writer.write_text_element(b"title", &*self.title)?;
         writer.write_text_element(b"id", &*self.id)?;
         writer.write_text_element(b"updated", &*self.updated.to_rfc3339())?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
-        writer
-            .write_objects_named(&self.contributors, "contributor")?;
+        writer.write_objects_named(&self.contributors, "contributor")?;
         writer.write_objects(&self.links)?;
 
         if let Some(ref published) = self.published {

@@ -1,5 +1,4 @@
 #![warn(missing_docs)]
-
 #![doc(html_root_url = "https://docs.rs/atom_syndication/")]
 
 //! Library for serializing the Atom web content syndication format.
@@ -59,10 +58,10 @@ extern crate quick_xml;
 
 extern crate chrono;
 
-mod feed;
 mod category;
 mod content;
 mod entry;
+mod feed;
 mod generator;
 mod link;
 mod person;
@@ -76,13 +75,13 @@ mod util;
 /// Types and functions for namespaced extensions.
 pub mod extension;
 
-pub use crate::feed::{Feed, FeedBuilder};
 pub use crate::category::{Category, CategoryBuilder};
 pub use crate::content::{Content, ContentBuilder};
 pub use crate::entry::{Entry, EntryBuilder};
+pub use crate::error::Error;
+pub use crate::feed::{Feed, FeedBuilder};
 pub use crate::generator::{Generator, GeneratorBuilder};
 pub use crate::link::{Link, LinkBuilder};
 pub use crate::person::{Person, PersonBuilder};
 pub use crate::source::{Source, SourceBuilder};
-pub use crate::error::Error;
 pub use crate::util::FixedDateTime;

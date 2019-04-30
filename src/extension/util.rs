@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::io::BufRead;
 use std::str;
 
-use quick_xml::events::Event;
 use quick_xml::events::attributes::Attributes;
+use quick_xml::events::Event;
 use quick_xml::Reader;
 
 use crate::error::Error;

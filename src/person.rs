@@ -1,8 +1,8 @@
 use std::io::{BufRead, Write};
 
-use quick_xml::Error as XmlError;
-use quick_xml::events::{Event, BytesStart, BytesEnd};
 use quick_xml::events::attributes::Attributes;
+use quick_xml::events::{BytesEnd, BytesStart, Event};
+use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
@@ -129,14 +129,12 @@ impl FromXml for Person {
 
         loop {
             match reader.read_event(&mut buf)? {
-                Event::Start(element) => {
-                    match element.name() {
-                        b"name" => person.name = atom_text(reader)?.unwrap_or_default(),
-                        b"email" => person.email = atom_text(reader)?,
-                        b"uri" => person.uri = atom_text(reader)?,
-                        n => reader.read_to_end(n, &mut Vec::new())?,
-                    }
-                }
+                Event::Start(element) => match element.name() {
+                    b"name" => person.name = atom_text(reader)?.unwrap_or_default(),
+                    b"email" => person.email = atom_text(reader)?,
+                    b"uri" => person.uri = atom_text(reader)?,
+                    n => reader.read_to_end(n, &mut Vec::new())?,
+                },
                 Event::End(_) => break,
                 Event::Eof => return Err(Error::Eof),
                 _ => {}
@@ -156,8 +154,7 @@ impl ToXmlNamed for Person {
         N: AsRef<[u8]>,
     {
         let name = name.as_ref();
-        writer
-            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
         writer.write_text_element(b"name", &*self.name)?;
 
         if let Some(ref email) = self.email {

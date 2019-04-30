@@ -1,8 +1,8 @@
 use std::io::{BufRead, Write};
 
-use quick_xml::Error as XmlError;
-use quick_xml::events::{Event, BytesStart, BytesEnd};
 use quick_xml::events::attributes::Attributes;
+use quick_xml::events::{BytesEnd, BytesStart, Event};
+use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
@@ -141,8 +141,8 @@ impl Source {
     /// source.set_updated(FixedDateTime::from_str("2017-06-03T15:15:44-05:00").unwrap());
     /// ```
     pub fn set_updated<V>(&mut self, updated: V)
-        where
-            V: Into<FixedDateTime>,
+    where
+        V: Into<FixedDateTime>,
     {
         self.updated = updated.into();
     }
@@ -443,42 +443,34 @@ impl FromXml for Source {
 
         loop {
             match reader.read_event(&mut buf)? {
-                Event::Start(element) => {
-                    match element.name() {
-                        b"id" => source.id = atom_text(reader)?.unwrap_or_default(),
-                        b"title" => source.title = atom_text(reader)?.unwrap_or_default(),
-                        b"updated" => source.updated = atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime),
-                        b"author" => {
-                            source
-                                .authors
-                                .push(Person::from_xml(reader, element.attributes())?)
-                        }
-                        b"category" => {
-                            source
-                                .categories
-                                .push(Category::from_xml(reader, element.attributes())?)
-                        }
-                        b"contributor" => {
-                            source
-                                .contributors
-                                .push(Person::from_xml(reader, element.attributes())?)
-                        }
-                        b"generator" => {
-                            source.generator =
-                                Some(Generator::from_xml(reader, element.attributes())?)
-                        }
-                        b"icon" => source.icon = atom_text(reader)?,
-                        b"link" => {
-                            source
-                                .links
-                                .push(Link::from_xml(reader, element.attributes())?)
-                        }
-                        b"logo" => source.logo = atom_text(reader)?,
-                        b"rights" => source.rights = atom_text(reader)?,
-                        b"subtitle" => source.subtitle = atom_text(reader)?,
-                        n => reader.read_to_end(n, &mut Vec::new())?,
+                Event::Start(element) => match element.name() {
+                    b"id" => source.id = atom_text(reader)?.unwrap_or_default(),
+                    b"title" => source.title = atom_text(reader)?.unwrap_or_default(),
+                    b"updated" => {
+                        source.updated =
+                            atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime)
                     }
-                }
+                    b"author" => source
+                        .authors
+                        .push(Person::from_xml(reader, element.attributes())?),
+                    b"category" => source
+                        .categories
+                        .push(Category::from_xml(reader, element.attributes())?),
+                    b"contributor" => source
+                        .contributors
+                        .push(Person::from_xml(reader, element.attributes())?),
+                    b"generator" => {
+                        source.generator = Some(Generator::from_xml(reader, element.attributes())?)
+                    }
+                    b"icon" => source.icon = atom_text(reader)?,
+                    b"link" => source
+                        .links
+                        .push(Link::from_xml(reader, element.attributes())?),
+                    b"logo" => source.logo = atom_text(reader)?,
+                    b"rights" => source.rights = atom_text(reader)?,
+                    b"subtitle" => source.subtitle = atom_text(reader)?,
+                    n => reader.read_to_end(n, &mut Vec::new())?,
+                },
                 Event::End(_) => break,
                 Event::Eof => return Err(Error::Eof),
                 _ => {}
@@ -494,15 +486,13 @@ impl FromXml for Source {
 impl ToXml for Source {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"source";
-        writer
-            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
         writer.write_text_element(b"title", &*self.title)?;
         writer.write_text_element(b"id", &*self.id)?;
         writer.write_text_element(b"updated", &self.updated.to_rfc3339())?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
-        writer
-            .write_objects_named(&self.contributors, "contributor")?;
+        writer.write_objects_named(&self.contributors, "contributor")?;
 
         if let Some(ref generator) = self.generator {
             writer.write_object(generator)?;

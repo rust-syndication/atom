@@ -1,17 +1,17 @@
 extern crate atom_syndication as atom;
 
-use std::io::BufReader;
 use std::fs::File;
+use std::io::BufReader;
 
-use crate::atom::Feed;
 use crate::atom::extension::ExtensionMap;
+use crate::atom::Feed;
 
 macro_rules! feed {
-    ($f:expr) => ({
+    ($f:expr) => {{
         let file = File::open($f).unwrap();
         let reader = BufReader::new(file);
         Feed::read_from(reader).unwrap()
-    })
+    }};
 }
 
 #[test]
@@ -44,7 +44,10 @@ fn read_entry() {
     assert_eq!(entry.categories().len(), 2);
     assert_eq!(entry.contributors().len(), 2);
     assert_eq!(entry.links().len(), 2);
-    assert_eq!(entry.published().map(|x| x.to_rfc3339()), Some("2017-06-01T15:15:44-05:00".to_string()));
+    assert_eq!(
+        entry.published().map(|x| x.to_rfc3339()),
+        Some("2017-06-01T15:15:44-05:00".to_string())
+    );
     assert_eq!(entry.summary(), Some("Entry summary"));
     assert_eq!(entry.rights(), Some("© 2017 John Doe"));
 
@@ -138,7 +141,6 @@ fn read_extension() {
         let child = parent.children().get("child").unwrap().first().unwrap();
         assert_eq!(child.value(), Some("Child"));
     };
-
 
     check_extensions(feed.extensions());
     check_extensions(entry.extensions());
