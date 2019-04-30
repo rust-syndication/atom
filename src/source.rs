@@ -6,14 +6,14 @@ use quick_xml::events::attributes::Attributes;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
-use category::Category;
-use error::Error;
-use fromxml::FromXml;
-use generator::Generator;
-use link::Link;
-use person::Person;
-use toxml::{ToXml, WriterExt};
-use util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
+use crate::category::Category;
+use crate::error::Error;
+use crate::fromxml::FromXml;
+use crate::generator::Generator;
+use crate::link::Link;
+use crate::person::Person;
+use crate::toxml::{ToXml, WriterExt};
+use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
 
 /// Represents the source of an Atom entry
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]

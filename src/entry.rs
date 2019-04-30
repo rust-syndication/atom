@@ -6,17 +6,17 @@ use quick_xml::events::attributes::Attributes;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
-use category::Category;
-use content::Content;
-use error::Error;
-use extension::ExtensionMap;
-use extension::util::{extension_name, parse_extension};
-use fromxml::FromXml;
-use link::Link;
-use person::Person;
-use source::Source;
-use toxml::{ToXml, WriterExt};
-use util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
+use crate::category::Category;
+use crate::content::Content;
+use crate::error::Error;
+use crate::extension::ExtensionMap;
+use crate::extension::util::{extension_name, parse_extension};
+use crate::fromxml::FromXml;
+use crate::link::Link;
+use crate::person::Person;
+use crate::source::Source;
+use crate::toxml::{ToXml, WriterExt};
+use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
 
 /// Represents an entry in an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]

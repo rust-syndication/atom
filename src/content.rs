@@ -6,10 +6,10 @@ use quick_xml::events::attributes::Attributes;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
-use error::Error;
-use fromxml::FromXml;
-use toxml::ToXml;
-use util::atom_any_text;
+use crate::error::Error;
+use crate::fromxml::FromXml;
+use crate::toxml::ToXml;
+use crate::util::atom_any_text;
 
 /// Represents the content of an Atom entry
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]

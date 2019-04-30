@@ -4,7 +4,7 @@ use quick_xml::events::Event;
 use quick_xml::events::attributes::{Attribute, Attributes};
 use quick_xml::Reader;
 
-use error::Error;
+use crate::error::Error;
 use std::str::FromStr;
 
 /// Alias of `::chrono::DateTime<::chrono::FixedOffset>`
