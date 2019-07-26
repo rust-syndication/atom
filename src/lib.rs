@@ -19,6 +19,17 @@
 //! let string = "<feed></feed>";
 //! let feed = string.parse::<Feed>().unwrap();
 //! ```
+//! ## From a URL
+//!
+//! A channel can also be read from a URL.
+//!
+//! **Note**: This requires enabling the `from_url` feature.
+//!
+//! ```ignore
+//! use rss::Channel;
+//!
+//! let channel = Channel::from_url("http://example.com/feed.xml").unwrap();
+//! ```
 //!
 //! # Writing
 //!
@@ -47,6 +58,9 @@
 #[cfg(feature = "serde")]
 #[macro_use]
 extern crate serde;
+
+#[cfg(feature = "from_url")]
+extern crate reqwest;
 
 #[macro_use]
 extern crate derive_builder;

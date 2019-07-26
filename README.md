@@ -31,6 +31,8 @@ extern crate atom_syndication;
 
 ## Reading
 
+### From a Reader
+
 A feed can be read from any object that implements the `BufRead` trait or using the `FromStr` trait.
 
 ```rust
@@ -43,6 +45,18 @@ let feed = Feed::read_from(BufReader::new(reader)).unwrap();
 
 let string = "<feed></feed>";
 let feed = string.parse::<Feed>().unwrap();
+```
+
+### From a URL
+
+A channel can also be read from a URL.
+
+**Note**: This requires enabling the `from_url` feature.
+
+```rust
+use rss::Channel;
+
+let channel = Channel::from_url("http://example.com/feed.xml").unwrap();
 ```
 
 ## Writing

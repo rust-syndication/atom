@@ -109,6 +109,31 @@ impl Feed {
         Err(Error::Eof)
     }
 
+    /// Attempt to read an RSS channel from a URL.
+    ///
+    /// Note: The `from_url` method can only be used by enabling the `from_url` feature in
+    /// your `Cargo.toml` as follows:
+    ///
+    /// ```toml
+    /// [dependencies]
+    /// rss = { version = "*", features = ["from_url"] }
+    /// ```
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rss::Channel;
+    /// let channel = Channel::from_url("https://feedpress.me/usererror.xml");
+    /// ```
+    #[cfg(feature = "from_url")]
+    pub fn from_url(url: &str) -> Result<Feed, Error> {
+        use std::io::Read;
+
+        let mut content = Vec::new();
+        ::reqwest::get(url)?.read_to_end(&mut content)?;
+        Ok(Feed::read_from(&content[..])?)
+    }
+
     /// Attempt to write this Atom feed to a writer.
     ///
     /// # Examples
