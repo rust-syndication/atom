@@ -181,7 +181,7 @@ impl ToXml for Extension {
             writer.write_event(Event::Text(BytesText::from_escaped(value.as_bytes())))?;
         }
 
-        for extension in self.children.values().flat_map(|extensions| extensions) {
+        for extension in self.children.values().flatten() {
             extension.to_xml(writer)?;
         }
 
