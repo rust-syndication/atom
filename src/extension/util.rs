@@ -87,13 +87,13 @@ fn parse_extension_element<R: BufRead>(
                 items.push(ext);
             }
             Event::CData(element) => {
-                extension.value = Some(reader.decode(&element).into_owned());
+                extension.value = Some(reader.decode(&element)?.into());
             }
             Event::Text(element) => {
                 extension.value = Some(element.unescape_and_decode(reader)?.trim().to_string());
             }
             Event::End(element) => {
-                extension.name = reader.decode(element.name()).into_owned();
+                extension.name = reader.decode(element.name())?.into();
                 break;
             }
             Event::Eof => return Err(Error::Eof),
