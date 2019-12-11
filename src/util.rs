@@ -41,7 +41,7 @@ pub fn atom_text<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, E
                 }
                 depth -= 1;
                 result.push_str("</");
-                result.push_str(&reader.decode(end.name())?);
+                result.push_str(&reader.decode(end.name()));
                 result.push('>');
             }
             Event::Empty(start) => {
@@ -51,7 +51,7 @@ pub fn atom_text<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, E
                 result.push_str("/>");
             }
             Event::CData(text) => {
-                let decoded = reader.decode(text.escaped())?;
+                let decoded = reader.decode(text.escaped());
                 result.push_str(&decoded);
             }
             Event::Text(text) => {
@@ -95,7 +95,7 @@ pub fn atom_xhtml<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, 
                 }
                 depth -= 1;
                 result.push_str("</");
-                result.push_str(&reader.decode(end.name())?);
+                result.push_str(&reader.decode(end.name()));
                 result.push('>');
             }
             Event::Empty(start) => {
@@ -105,11 +105,11 @@ pub fn atom_xhtml<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, 
                 result.push_str("/>");
             }
             Event::CData(text) => {
-                let decoded = reader.decode(text.escaped())?;
+                let decoded = reader.decode(text.escaped());
                 result.push_str(&decoded);
             }
             Event::Text(text) => {
-                let decoded = reader.decode(text.escaped())?;
+                let decoded = reader.decode(text.escaped());
                 result.push_str(&decoded);
             }
             Event::Comment(text) => {
