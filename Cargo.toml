@@ -17,7 +17,6 @@ quick-xml = { version = "0.17", features = ["encoding"] }
 derive_builder = "0.9"
 serde = { version = "1.0", optional = true, features = ["derive"] }
 chrono = "0.4"
-thiserror = "1.0"
 
 [features]
 with-serde = ["serde", "chrono/serde"]
