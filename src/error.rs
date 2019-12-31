@@ -36,12 +36,13 @@ impl fmt::Display for Error {
         match *self {
             Error::Xml(ref err) => err.fmt(f),
             Error::Utf8(ref err) => err.fmt(f),
-            Error::InvalidStartTag =>
-                write!(f, "input did not begin with an opening feed tag"),
-            Error::Eof =>
-                write!(f, "unexpected end of input"),
-            Error::WrongDatetime(ref datetime) =>
-                write!(f, "timestamps must be formatted by RFC3339, rather than {}", datetime),
+            Error::InvalidStartTag => write!(f, "input did not begin with an opening feed tag"),
+            Error::Eof => write!(f, "unexpected end of input"),
+            Error::WrongDatetime(ref datetime) => write!(
+                f,
+                "timestamps must be formatted by RFC3339, rather than {}",
+                datetime
+            ),
         }
     }
 }
