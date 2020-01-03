@@ -20,7 +20,7 @@ pub enum Error {
 }
 
 impl StdError for Error {
-    fn cause(&self) -> Option<&dyn StdError> {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match *self {
             Error::Xml(ref err) => Some(err),
             Error::Utf8(ref err) => Some(err),
@@ -34,8 +34,8 @@ impl StdError for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Error::Xml(ref err) => err.fmt(f),
-            Error::Utf8(ref err) => err.fmt(f),
+            Error::Xml(ref err) => fmt::Display::fmt(err, f),
+            Error::Utf8(ref err) => fmt::Display::fmt(err, f),
             Error::InvalidStartTag => write!(f, "input did not begin with an opening feed tag"),
             Error::Eof => write!(f, "unexpected end of input"),
             Error::WrongDatetime(ref datetime) => write!(
