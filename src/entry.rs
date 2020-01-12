@@ -20,8 +20,9 @@ use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTim
 
 /// Represents an entry in an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Clone, PartialEq, Builder)]
-#[builder(setter(into), default)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "builders", derive(Builder))]
+#[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Entry {
     /// A human-readable title for the entry.
     title: String,

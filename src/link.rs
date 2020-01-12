@@ -12,8 +12,9 @@ use crate::toxml::ToXml;
 
 /// Represents a link in an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Clone, PartialEq, Builder)]
-#[builder(setter(into), default)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "builders", derive(Builder))]
+#[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Link {
     /// The URI of the referenced resource.
     href: String,

@@ -9,6 +9,7 @@ rust:
 
 script:
   - rustup component add rustfmt clippy
+  - cargo build --all-targets --no-default-features --verbose
   - cargo build --all-targets --verbose
   - cargo test --all-targets --verbose
   - cargo clippy --all-targets --all-features -- -D warnings

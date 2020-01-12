@@ -12,8 +12,9 @@ use crate::toxml::ToXml;
 
 /// Represents a category in an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Default, Clone, PartialEq, Builder)]
-#[builder(setter(into), default)]
+#[derive(Debug, Default, Clone, PartialEq)]
+#[cfg_attr(feature = "builders", derive(Builder))]
+#[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Category {
     /// Identifies the category.
     term: String,

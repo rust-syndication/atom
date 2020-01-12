@@ -48,6 +48,7 @@
 #[macro_use]
 extern crate serde;
 
+#[cfg(feature = "builders")]
 #[macro_use]
 extern crate derive_builder;
 
@@ -72,13 +73,29 @@ mod util;
 /// Types and functions for namespaced extensions.
 pub mod extension;
 
-pub use crate::category::{Category, CategoryBuilder};
-pub use crate::content::{Content, ContentBuilder};
-pub use crate::entry::{Entry, EntryBuilder};
+pub use crate::category::Category;
+#[cfg(feature = "builders")]
+pub use crate::category::CategoryBuilder;
+pub use crate::content::Content;
+#[cfg(feature = "builders")]
+pub use crate::content::ContentBuilder;
+pub use crate::entry::Entry;
+#[cfg(feature = "builders")]
+pub use crate::entry::EntryBuilder;
 pub use crate::error::Error;
-pub use crate::feed::{Feed, FeedBuilder};
-pub use crate::generator::{Generator, GeneratorBuilder};
-pub use crate::link::{Link, LinkBuilder};
-pub use crate::person::{Person, PersonBuilder};
-pub use crate::source::{Source, SourceBuilder};
+pub use crate::feed::Feed;
+#[cfg(feature = "builders")]
+pub use crate::feed::FeedBuilder;
+pub use crate::generator::Generator;
+#[cfg(feature = "builders")]
+pub use crate::generator::GeneratorBuilder;
+pub use crate::link::Link;
+#[cfg(feature = "builders")]
+pub use crate::link::LinkBuilder;
+pub use crate::person::Person;
+#[cfg(feature = "builders")]
+pub use crate::person::PersonBuilder;
+pub use crate::source::Source;
+#[cfg(feature = "builders")]
+pub use crate::source::SourceBuilder;
 pub use crate::util::FixedDateTime;
