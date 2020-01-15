@@ -13,8 +13,9 @@ use crate::util::atom_any_text;
 
 /// Represents the content of an Atom entry
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Default, Clone, PartialEq, Builder)]
-#[builder(setter(into), default)]
+#[derive(Debug, Default, Clone, PartialEq)]
+#[cfg_attr(feature = "builders", derive(Builder))]
+#[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Content {
     /// The text value of the content.
     value: Option<String>,
