@@ -17,11 +17,11 @@ use crate::toxml::ToXml;
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Category {
     /// Identifies the category.
-    term: String,
+    pub term: String,
     /// Identifies the categorization scheme via a URI.
-    scheme: Option<String>,
+    pub scheme: Option<String>,
     /// A human-readable label for display.
-    label: Option<String>,
+    pub label: Option<String>,
 }
 
 impl Category {

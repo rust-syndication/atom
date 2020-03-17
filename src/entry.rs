@@ -25,31 +25,31 @@ use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTim
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Entry {
     /// A human-readable title for the entry.
-    title: String,
+    pub title: String,
     /// A universally unique and permanent URI.
-    id: String,
+    pub id: String,
     /// The last time the entry was modified.
-    updated: FixedDateTime,
+    pub updated: FixedDateTime,
     /// The authors of the feed.
-    authors: Vec<Person>,
+    pub authors: Vec<Person>,
     /// The categories that the entry belongs to.
-    categories: Vec<Category>,
+    pub categories: Vec<Category>,
     /// The contributors to the entry.
-    contributors: Vec<Person>,
+    pub contributors: Vec<Person>,
     /// The Web pages related to the entry.
-    links: Vec<Link>,
+    pub links: Vec<Link>,
     /// The time of the initial creation or first availability of the entry.
-    published: Option<FixedDateTime>,
+    pub published: Option<FixedDateTime>,
     /// Information about rights held in and over the entry.
-    rights: Option<String>,
+    pub rights: Option<String>,
     /// The source information if an entry is copied from one feed into another feed.
-    source: Option<Source>,
+    pub source: Option<Source>,
     /// A short summary, abstract, or excerpt of the entry.
-    summary: Option<String>,
+    pub summary: Option<String>,
     /// Contains or links to the complete content of the entry.
-    content: Option<Content>,
+    pub content: Option<Content>,
     /// The extensions for this entry.
-    extensions: ExtensionMap,
+    pub extensions: ExtensionMap,
 }
 
 impl Entry {

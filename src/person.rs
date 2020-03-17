@@ -18,11 +18,11 @@ use crate::util::atom_text;
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Person {
     /// A human-readable name for the person.
-    name: String,
+    pub name: String,
     /// An email address for the person.
-    email: Option<String>,
+    pub email: Option<String>,
     /// A Web page for the person.
-    uri: Option<String>,
+    pub uri: Option<String>,
 }
 
 impl Person {

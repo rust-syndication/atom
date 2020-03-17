@@ -27,35 +27,35 @@ use crate::util::{atom_any_text, atom_datetime, atom_text, default_fixed_datetim
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Feed {
     /// A human-readable title for the feed.
-    title: String,
+    pub title: String,
     /// A universally unique and permanent URI.
-    id: String,
+    pub id: String,
     /// The last time the feed was modified in a significant way.
-    updated: FixedDateTime,
+    pub updated: FixedDateTime,
     /// The authors of the feed.
-    authors: Vec<Person>,
+    pub authors: Vec<Person>,
     /// The categories that the feed belongs to.
-    categories: Vec<Category>,
+    pub categories: Vec<Category>,
     /// The contributors to the feed.
-    contributors: Vec<Person>,
+    pub contributors: Vec<Person>,
     /// The software used to generate the feed.
-    generator: Option<Generator>,
+    pub generator: Option<Generator>,
     /// A small image which provides visual identification for the feed.
-    icon: Option<String>,
+    pub icon: Option<String>,
     /// The Web pages related to the feed.
-    links: Vec<Link>,
+    pub links: Vec<Link>,
     /// A larger image which provides visual identification for the feed.
-    logo: Option<String>,
+    pub logo: Option<String>,
     /// Information about rights held in and over the feed.
-    rights: Option<String>,
+    pub rights: Option<String>,
     /// A human-readable description or subtitle for the feed.
-    subtitle: Option<String>,
+    pub subtitle: Option<String>,
     /// The entries contained in the feed.
-    entries: Vec<Entry>,
+    pub entries: Vec<Entry>,
     /// The extensions for the feed.
-    extensions: ExtensionMap,
+    pub extensions: ExtensionMap,
     /// The namespaces present in the feed tag.
-    namespaces: HashMap<String, String>,
+    pub namespaces: HashMap<String, String>,
 }
 
 impl Feed {

@@ -18,11 +18,11 @@ use crate::util::atom_text;
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Generator {
     /// The name of the generator.
-    value: String,
+    pub value: String,
     /// The generator URI.
-    uri: Option<String>,
+    pub uri: Option<String>,
     /// The generator version.
-    version: Option<String>,
+    pub version: Option<String>,
 }
 
 impl Generator {

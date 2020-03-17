@@ -17,17 +17,17 @@ use crate::toxml::ToXml;
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Link {
     /// The URI of the referenced resource.
-    href: String,
+    pub href: String,
     /// The link relationship type.
-    rel: String,
+    pub rel: String,
     /// The language of the resource.
-    hreflang: Option<String>,
+    pub hreflang: Option<String>,
     /// The MIME type of the resource.
-    mime_type: Option<String>,
+    pub mime_type: Option<String>,
     /// Human-readable information about the link.
-    title: Option<String>,
+    pub title: Option<String>,
     /// The length of the resource, in bytes.
-    length: Option<String>,
+    pub length: Option<String>,
 }
 
 impl Default for Link {
