@@ -7,6 +7,10 @@ rust:
   - beta
   - stable
 
+jobs:
+  allow_failures:
+    - rust: nightly
+
 script:
   - rustup component add rustfmt clippy
   - cargo build --all-targets --no-default-features --verbose
