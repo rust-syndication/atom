@@ -1,4 +1,4 @@
-#![warn(missing_docs)]
+#![warn(missing_docs, rust_2018_idioms)]
 #![doc(html_root_url = "https://docs.rs/atom_syndication/")]
 
 //! Library for serializing the Atom web content syndication format.
@@ -51,10 +51,6 @@ extern crate serde;
 #[cfg(feature = "builders")]
 #[macro_use]
 extern crate derive_builder;
-
-extern crate quick_xml;
-
-extern crate chrono;
 
 mod category;
 mod content;

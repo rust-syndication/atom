@@ -70,7 +70,7 @@ impl Person {
     /// assert_eq!(person.email(), Some("johndoe@example.com"));
     /// ```
     pub fn email(&self) -> Option<&str> {
-        self.email.as_ref().map(String::as_str)
+        self.email.as_deref()
     }
 
     /// Set the email address for this person.
@@ -102,7 +102,7 @@ impl Person {
     /// assert_eq!(person.uri(), Some("http://example.com"));
     /// ```
     pub fn uri(&self) -> Option<&str> {
-        self.uri.as_ref().map(String::as_str)
+        self.uri.as_deref()
     }
 
     /// Set the Web page for this person.
@@ -124,7 +124,7 @@ impl Person {
 }
 
 impl FromXml for Person {
-    fn from_xml<B: BufRead>(reader: &mut Reader<B>, _: Attributes) -> Result<Self, Error> {
+    fn from_xml<B: BufRead>(reader: &mut Reader<B>, _: Attributes<'_>) -> Result<Self, Error> {
         let mut person = Person::default();
         let mut buf = Vec::new();
 

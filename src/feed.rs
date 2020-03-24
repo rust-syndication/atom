@@ -370,7 +370,7 @@ impl Feed {
     /// assert_eq!(feed.icon(), Some("http://example.com/icon.png"));
     /// ```
     pub fn icon(&self) -> Option<&str> {
-        self.icon.as_ref().map(String::as_str)
+        self.icon.as_deref()
     }
 
     /// Set the icon for this feed.
@@ -434,7 +434,7 @@ impl Feed {
     /// assert_eq!(feed.logo(), Some("http://example.com/logo.png"));
     /// ```
     pub fn logo(&self) -> Option<&str> {
-        self.logo.as_ref().map(String::as_str)
+        self.logo.as_deref()
     }
 
     /// Set the logo for this feed.
@@ -466,7 +466,7 @@ impl Feed {
     /// assert_eq!(feed.rights(), Some("© 2017 John Doe"));
     /// ```
     pub fn rights(&self) -> Option<&str> {
-        self.rights.as_ref().map(String::as_str)
+        self.rights.as_deref()
     }
 
     /// Set the information about the rights held in and over this feed.
@@ -498,7 +498,7 @@ impl Feed {
     /// assert_eq!(feed.subtitle(), Some("Feed subtitle"));
     /// ```
     pub fn subtitle(&self) -> Option<&str> {
-        self.subtitle.as_ref().map(String::as_str)
+        self.subtitle.as_deref()
     }
 
     /// Set the description or subtitle of this feed.
@@ -636,7 +636,7 @@ impl Feed {
 }
 
 impl FromXml for Feed {
-    fn from_xml<B: BufRead>(reader: &mut Reader<B>, _: Attributes) -> Result<Self, Error> {
+    fn from_xml<B: BufRead>(reader: &mut Reader<B>, _: Attributes<'_>) -> Result<Self, Error> {
         let mut feed = Feed::default();
         let mut buf = Vec::new();
 

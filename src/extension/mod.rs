@@ -74,7 +74,7 @@ impl Extension {
     /// assert_eq!(extension.value(), Some("John Doe"));
     /// ```
     pub fn value(&self) -> Option<&str> {
-        self.value.as_ref().map(String::as_str)
+        self.value.as_deref()
     }
 
     /// Set the text content of this extension.

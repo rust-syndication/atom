@@ -71,7 +71,7 @@ impl Generator {
     /// assert_eq!(generator.uri(), Some("http://example.com/generator"));
     /// ```
     pub fn uri(&self) -> Option<&str> {
-        self.uri.as_ref().map(String::as_str)
+        self.uri.as_deref()
     }
 
     /// Set the URI for the generator.
@@ -103,7 +103,7 @@ impl Generator {
     /// assert_eq!(generator.version(), Some("1.0"));
     /// ```
     pub fn version(&self) -> Option<&str> {
-        self.version.as_ref().map(String::as_str)
+        self.version.as_deref()
     }
 
     /// Set the version of the generator.
@@ -125,7 +125,10 @@ impl Generator {
 }
 
 impl FromXml for Generator {
-    fn from_xml<B: BufRead>(reader: &mut Reader<B>, mut atts: Attributes) -> Result<Self, Error> {
+    fn from_xml<B: BufRead>(
+        reader: &mut Reader<B>,
+        mut atts: Attributes<'_>,
+    ) -> Result<Self, Error> {
         let mut generator = Generator::default();
 
         for attr in atts.with_checks(false) {

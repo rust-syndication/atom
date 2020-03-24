@@ -69,7 +69,7 @@ impl Category {
     /// assert_eq!(category.scheme(), Some("http://example.com/scheme"));
     /// ```
     pub fn scheme(&self) -> Option<&str> {
-        self.scheme.as_ref().map(String::as_str)
+        self.scheme.as_deref()
     }
 
     /// Set the categorization scheme URI.
@@ -102,7 +102,7 @@ impl Category {
     /// ```
 
     pub fn label(&self) -> Option<&str> {
-        self.label.as_ref().map(String::as_str)
+        self.label.as_deref()
     }
 
     /// Set the label for this category.
@@ -124,7 +124,10 @@ impl Category {
 }
 
 impl FromXml for Category {
-    fn from_xml<B: BufRead>(reader: &mut Reader<B>, mut atts: Attributes) -> Result<Self, Error> {
+    fn from_xml<B: BufRead>(
+        reader: &mut Reader<B>,
+        mut atts: Attributes<'_>,
+    ) -> Result<Self, Error> {
         let mut category = Category::default();
 
         for attr in atts.with_checks(false) {

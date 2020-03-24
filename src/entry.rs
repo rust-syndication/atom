@@ -329,7 +329,7 @@ impl Entry {
     /// assert_eq!(entry.rights(), Some("© 2017 John Doe"));
     /// ```
     pub fn rights(&self) -> Option<&str> {
-        self.rights.as_ref().map(String::as_str)
+        self.rights.as_deref()
     }
 
     /// Set the information about the rights held in and over this entry.
@@ -393,7 +393,7 @@ impl Entry {
     /// assert_eq!(entry.summary(), Some("Entry summary."));
     /// ```
     pub fn summary(&self) -> Option<&str> {
-        self.summary.as_ref().map(String::as_str)
+        self.summary.as_deref()
     }
 
     /// Set the summary of this entry.
@@ -495,7 +495,7 @@ impl Entry {
 }
 
 impl FromXml for Entry {
-    fn from_xml<B: BufRead>(reader: &mut Reader<B>, _: Attributes) -> Result<Self, Error> {
+    fn from_xml<B: BufRead>(reader: &mut Reader<B>, _: Attributes<'_>) -> Result<Self, Error> {
         let mut entry = Entry::default();
         let mut buf = Vec::new();
 

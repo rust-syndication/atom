@@ -41,7 +41,7 @@ impl Content {
     /// assert_eq!(content.value(), Some("Example content"));
     /// ```
     pub fn value(&self) -> Option<&str> {
-        self.value.as_ref().map(String::as_str)
+        self.value.as_deref()
     }
 
     /// Set the text value of the content.
@@ -73,7 +73,7 @@ impl Content {
     /// assert_eq!(content.src(), Some("http://example.com/content.html"));
     /// ```
     pub fn src(&self) -> Option<&str> {
-        self.src.as_ref().map(String::as_str)
+        self.src.as_deref()
     }
 
     /// Set the URI where the content can be found.
@@ -107,7 +107,7 @@ impl Content {
     /// assert_eq!(content.content_type(), Some("image/png"));
     /// ```
     pub fn content_type(&self) -> Option<&str> {
-        self.content_type.as_ref().map(String::as_str)
+        self.content_type.as_deref()
     }
 
     /// Set the type of the content.
@@ -130,7 +130,10 @@ impl Content {
 }
 
 impl FromXml for Content {
-    fn from_xml<B: BufRead>(reader: &mut Reader<B>, mut atts: Attributes) -> Result<Self, Error> {
+    fn from_xml<B: BufRead>(
+        reader: &mut Reader<B>,
+        mut atts: Attributes<'_>,
+    ) -> Result<Self, Error> {
         let mut content = Content::default();
 
         for attr in atts.with_checks(false) {
