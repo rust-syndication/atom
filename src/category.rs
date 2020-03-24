@@ -17,11 +17,11 @@ use crate::toxml::ToXml;
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Category {
     /// Identifies the category.
-    term: String,
+    pub term: String,
     /// Identifies the categorization scheme via a URI.
-    scheme: Option<String>,
+    pub scheme: Option<String>,
     /// A human-readable label for display.
-    label: Option<String>,
+    pub label: Option<String>,
 }
 
 impl Category {
@@ -69,7 +69,7 @@ impl Category {
     /// assert_eq!(category.scheme(), Some("http://example.com/scheme"));
     /// ```
     pub fn scheme(&self) -> Option<&str> {
-        self.scheme.as_ref().map(String::as_str)
+        self.scheme.as_deref()
     }
 
     /// Set the categorization scheme URI.
@@ -102,7 +102,7 @@ impl Category {
     /// ```
 
     pub fn label(&self) -> Option<&str> {
-        self.label.as_ref().map(String::as_str)
+        self.label.as_deref()
     }
 
     /// Set the label for this category.
@@ -124,7 +124,10 @@ impl Category {
 }
 
 impl FromXml for Category {
-    fn from_xml<B: BufRead>(reader: &mut Reader<B>, mut atts: Attributes) -> Result<Self, Error> {
+    fn from_xml<B: BufRead>(
+        reader: &mut Reader<B>,
+        mut atts: Attributes<'_>,
+    ) -> Result<Self, Error> {
         let mut category = Category::default();
 
         for attr in atts.with_checks(false) {

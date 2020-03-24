@@ -132,7 +132,7 @@ pub fn atom_xhtml<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, 
 
 pub fn atom_any_text<B: BufRead>(
     reader: &mut Reader<B>,
-    mut atts: Attributes,
+    mut atts: Attributes<'_>,
 ) -> Result<Option<String>, Error> {
     let mut content_type = None;
     for attr in atts.with_checks(false) {

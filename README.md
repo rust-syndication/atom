@@ -7,6 +7,8 @@ Library for serializing the Atom web content syndication format.
 
 [Documentation](https://docs.rs/atom_syndication/)
 
+This crate requires *Rustc version 1.40.0 or greater*.
+
 ## Usage
 
 Add the dependency to your `Cargo.toml`.

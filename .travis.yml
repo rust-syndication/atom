@@ -6,6 +6,11 @@ rust:
   - nightly
   - beta
   - stable
+  - 1.40.0
+
+jobs:
+  allow_failures:
+    - rust: nightly
 
 script:
   - rustup component add rustfmt clippy

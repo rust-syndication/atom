@@ -17,17 +17,17 @@ use crate::toxml::ToXml;
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Link {
     /// The URI of the referenced resource.
-    href: String,
+    pub href: String,
     /// The link relationship type.
-    rel: String,
+    pub rel: String,
     /// The language of the resource.
-    hreflang: Option<String>,
+    pub hreflang: Option<String>,
     /// The MIME type of the resource.
-    mime_type: Option<String>,
+    pub mime_type: Option<String>,
     /// Human-readable information about the link.
-    title: Option<String>,
+    pub title: Option<String>,
     /// The length of the resource, in bytes.
-    length: Option<String>,
+    pub length: Option<String>,
 }
 
 impl Default for Link {
@@ -120,7 +120,7 @@ impl Link {
     /// assert_eq!(link.hreflang(), Some("en"));
     /// ```
     pub fn hreflang(&self) -> Option<&str> {
-        self.hreflang.as_ref().map(String::as_str)
+        self.hreflang.as_deref()
     }
 
     /// Set the language of the referenced resource.
@@ -152,7 +152,7 @@ impl Link {
     /// assert_eq!(link.mime_type(), Some("text/html"));
     /// ```
     pub fn mime_type(&self) -> Option<&str> {
-        self.mime_type.as_ref().map(String::as_str)
+        self.mime_type.as_deref()
     }
 
     /// Set the MIME type of the referenced resource.
@@ -184,7 +184,7 @@ impl Link {
     /// assert_eq!(link.title(), Some("Article Title"));
     /// ```
     pub fn title(&self) -> Option<&str> {
-        self.title.as_ref().map(String::as_str)
+        self.title.as_deref()
     }
 
     /// Set the title of the referenced resource.
@@ -216,7 +216,7 @@ impl Link {
     /// assert_eq!(link.length(), Some("1000"));
     /// ```
     pub fn length(&self) -> Option<&str> {
-        self.length.as_ref().map(String::as_str)
+        self.length.as_deref()
     }
 
     /// Set the content length of the referenced resource in bytes.
@@ -238,7 +238,10 @@ impl Link {
 }
 
 impl FromXml for Link {
-    fn from_xml<B: BufRead>(reader: &mut Reader<B>, mut atts: Attributes) -> Result<Self, Error> {
+    fn from_xml<B: BufRead>(
+        reader: &mut Reader<B>,
+        mut atts: Attributes<'_>,
+    ) -> Result<Self, Error> {
         let mut link = Link::default();
 
         for attr in atts.with_checks(false) {

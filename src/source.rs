@@ -22,29 +22,29 @@ use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTim
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Source {
     /// A human-readable title for the feed.
-    title: String,
+    pub title: String,
     /// A universally unique and permanent URI.
-    id: String,
+    pub id: String,
     /// The last time the feed was modified in a significant way.
-    updated: FixedDateTime,
+    pub updated: FixedDateTime,
     /// The authors of the feed.
-    authors: Vec<Person>,
+    pub authors: Vec<Person>,
     /// The categories that the feed belongs to.
-    categories: Vec<Category>,
+    pub categories: Vec<Category>,
     /// The contributors to the feed.
-    contributors: Vec<Person>,
+    pub contributors: Vec<Person>,
     /// The software used to generate the feed.
-    generator: Option<Generator>,
+    pub generator: Option<Generator>,
     /// A small image which provides visual identification for the feed.
-    icon: Option<String>,
+    pub icon: Option<String>,
     /// The Web pages related to the feed.
-    links: Vec<Link>,
+    pub links: Vec<Link>,
     /// A larger image which provides visual identification for the feed.
-    logo: Option<String>,
+    pub logo: Option<String>,
     /// Information about rights held in and over the feed.
-    rights: Option<String>,
+    pub rights: Option<String>,
     /// A human-readable description or subtitle for the feed.
-    subtitle: Option<String>,
+    pub subtitle: Option<String>,
 }
 
 impl Source {
@@ -288,7 +288,7 @@ impl Source {
     /// assert_eq!(source.icon(), Some("http://example.com/icon.png"));
     /// ```
     pub fn icon(&self) -> Option<&str> {
-        self.icon.as_ref().map(String::as_str)
+        self.icon.as_deref()
     }
 
     /// Set the icon for the source feed.
@@ -352,7 +352,7 @@ impl Source {
     /// assert_eq!(source.logo(), Some("http://example.com/logo.png"));
     /// ```
     pub fn logo(&self) -> Option<&str> {
-        self.logo.as_ref().map(String::as_str)
+        self.logo.as_deref()
     }
 
     /// Set the logo for the source feed.
@@ -384,7 +384,7 @@ impl Source {
     /// assert_eq!(source.rights(), Some("© 2017 John Doe"));
     /// ```
     pub fn rights(&self) -> Option<&str> {
-        self.rights.as_ref().map(String::as_str)
+        self.rights.as_deref()
     }
 
     /// Set the information about the rights held in and over the source feed.
@@ -416,7 +416,7 @@ impl Source {
     /// assert_eq!(source.subtitle(), Some("Feed subtitle"));
     /// ```
     pub fn subtitle(&self) -> Option<&str> {
-        self.subtitle.as_ref().map(String::as_str)
+        self.subtitle.as_deref()
     }
 
     /// Set the description or subtitle of the source feed.
@@ -438,7 +438,7 @@ impl Source {
 }
 
 impl FromXml for Source {
-    fn from_xml<B: BufRead>(reader: &mut Reader<B>, _: Attributes) -> Result<Self, Error> {
+    fn from_xml<B: BufRead>(reader: &mut Reader<B>, _: Attributes<'_>) -> Result<Self, Error> {
         let mut source = Source::default();
         let mut buf = Vec::new();
 
