@@ -17,6 +17,7 @@ quick-xml = { version = "0.17", features = ["encoding"] }
 derive_builder = { version = "0.9", optional = true }
 serde = { version = "1.0", optional = true, features = ["derive"] }
 chrono = "0.4"
+diligent-date-parser = "0.1"
 
 [features]
 default = ["builders"]

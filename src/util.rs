@@ -149,10 +149,9 @@ pub fn atom_any_text<B: BufRead>(
 
 pub fn atom_datetime<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<FixedDateTime>, Error> {
     if let Some(datetime_text) = atom_text(reader)? {
-        let parse_result = FixedDateTime::parse_from_rfc3339(&datetime_text);
-        match parse_result {
-            Err(_) => Err(Error::WrongDatetime(datetime_text)),
-            Ok(datetime) => Ok(Some(datetime)),
+        match diligent_date_parser::parse_date(&datetime_text) {
+            None => Err(Error::WrongDatetime(datetime_text)),
+            Some(datetime) => Ok(Some(datetime)),
         }
     } else {
         Ok(None)
