@@ -56,6 +56,30 @@ fn read_entry() {
 }
 
 #[test]
+fn read_entry_with_non_standard_dates() {
+    let feed = feed!("tests/data/entry_with_non_standard_dates.xml");
+    assert_eq!(feed.entries().len(), 1);
+
+    let entry = feed.entries().first().unwrap();
+    assert_eq!(entry.title(), "Entry Title");
+    assert_eq!(entry.id(), "http://example.com/article/1");
+    assert_eq!(entry.updated().to_rfc3339(), "2017-06-03T15:15:44-05:00");
+    assert_eq!(entry.authors().len(), 2);
+    assert_eq!(entry.categories().len(), 2);
+    assert_eq!(entry.contributors().len(), 2);
+    assert_eq!(entry.links().len(), 2);
+    assert_eq!(
+        entry.published().map(chrono::DateTime::to_rfc3339),
+        Some("2017-06-01T15:15:44-05:00".to_string())
+    );
+    assert_eq!(entry.summary(), Some("Entry summary"));
+    assert_eq!(entry.rights(), Some("© 2017 John Doe"));
+
+    let content = entry.content().unwrap();
+    assert_eq!(content.value(), Some("Entry content"));
+}
+
+#[test]
 fn read_category() {
     let feed = feed!("tests/data/category.xml");
     let category = feed.categories().first().unwrap();
