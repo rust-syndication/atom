@@ -2,7 +2,7 @@
 
 [![Build status](https://github.com/rust-syndication/atom/workflows/Build/badge.svg)](https://github.com/rust-syndication/atom/actions)
 [![Crates.io Status](https://img.shields.io/crates/v/atom_syndication.svg)](https://crates.io/crates/atom_syndication)
-[![Coverage](https://codecov.io/gh/rust-syndication/atom/branch/master/graph/badge.svg)](https://codecov.io/gh/ust-syndication/atom/)
+[![Coverage](https://codecov.io/gh/rust-syndication/atom/branch/master/graph/badge.svg)](https://codecov.io/gh/rust-syndication/atom/)
 
 Library for serializing the Atom web content syndication format.
 
