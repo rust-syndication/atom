@@ -13,7 +13,7 @@ categories = ["parser-implementations"]
 include = ["src/*", "Cargo.toml", "LICENSE-MIT", "LICENSE-APACHE", "README.md"]
 
 [dependencies]
-quick-xml = { version = "0.18", features = ["encoding"] }
+quick-xml = { version = "0.20", features = ["encoding"] }
 derive_builder = { version = "0.9", optional = true }
 serde = { version = "1.0", optional = true, features = ["derive"] }
 chrono = "0.4"
