@@ -12,6 +12,7 @@ use crate::fromxml::FromXml;
 use crate::generator::Generator;
 use crate::link::Link;
 use crate::person::Person;
+use crate::text::Text;
 use crate::toxml::{ToXml, WriterExt};
 use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
 
@@ -22,7 +23,7 @@ use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTim
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Source {
     /// A human-readable title for the feed.
-    pub title: String,
+    pub title: Text,
     /// A universally unique and permanent URI.
     pub id: String,
     /// The last time the feed was modified in a significant way.
@@ -42,9 +43,9 @@ pub struct Source {
     /// A larger image which provides visual identification for the feed.
     pub logo: Option<String>,
     /// Information about rights held in and over the feed.
-    pub rights: Option<String>,
+    pub rights: Option<Text>,
     /// A human-readable description or subtitle for the feed.
-    pub subtitle: Option<String>,
+    pub subtitle: Option<Text>,
 }
 
 impl Source {
@@ -59,8 +60,8 @@ impl Source {
     /// source.set_title("Feed Title");
     /// assert_eq!(source.title(), "Feed Title");
     /// ```
-    pub fn title(&self) -> &str {
-        self.title.as_str()
+    pub fn title(&self) -> &Text {
+        &self.title
     }
 
     /// Set the title of the source feed.
@@ -75,7 +76,7 @@ impl Source {
     /// ```
     pub fn set_title<V>(&mut self, title: V)
     where
-        V: Into<String>,
+        V: Into<Text>,
     {
         self.title = title.into();
     }
@@ -377,14 +378,14 @@ impl Source {
     /// # Examples
     ///
     /// ```
-    /// use atom_syndication::Source;
+    /// use atom_syndication::{Source, Text};
     ///
     /// let mut source = Source::default();
-    /// source.set_rights("© 2017 John Doe".to_string());
-    /// assert_eq!(source.rights(), Some("© 2017 John Doe"));
+    /// source.set_rights(Text::from("© 2017 John Doe"));
+    /// assert_eq!(source.rights().map(Text::as_str), Some("© 2017 John Doe"));
     /// ```
-    pub fn rights(&self) -> Option<&str> {
-        self.rights.as_deref()
+    pub fn rights(&self) -> Option<&Text> {
+        self.rights.as_ref()
     }
 
     /// Set the information about the rights held in and over the source feed.
@@ -392,14 +393,14 @@ impl Source {
     /// # Examples
     ///
     /// ```
-    /// use atom_syndication::Source;
+    /// use atom_syndication::{Source, Text};
     ///
     /// let mut source = Source::default();
-    /// source.set_rights("© 2017 John Doe".to_string());
+    /// source.set_rights(Text::from("© 2017 John Doe"));
     /// ```
     pub fn set_rights<V>(&mut self, rights: V)
     where
-        V: Into<Option<String>>,
+        V: Into<Option<Text>>,
     {
         self.rights = rights.into()
     }
@@ -409,14 +410,14 @@ impl Source {
     /// # Examples
     ///
     /// ```
-    /// use atom_syndication::Source;
+    /// use atom_syndication::{Source, Text};
     ///
     /// let mut source = Source::default();
-    /// source.set_subtitle("Feed subtitle".to_string());
-    /// assert_eq!(source.subtitle(), Some("Feed subtitle"));
+    /// source.set_subtitle(Text::from("Feed subtitle"));
+    /// assert_eq!(source.subtitle().map(Text::as_str), Some("Feed subtitle"));
     /// ```
-    pub fn subtitle(&self) -> Option<&str> {
-        self.subtitle.as_deref()
+    pub fn subtitle(&self) -> Option<&Text> {
+        self.subtitle.as_ref()
     }
 
     /// Set the description or subtitle of the source feed.
@@ -424,14 +425,14 @@ impl Source {
     /// # Examples
     ///
     /// ```
-    /// use atom_syndication::Source;
+    /// use atom_syndication::{Source, Text};
     ///
     /// let mut source = Source::default();
-    /// source.set_subtitle("Feed subtitle".to_string());
+    /// source.set_subtitle(Text::from("Feed subtitle"));
     /// ```
     pub fn set_subtitle<V>(&mut self, subtitle: V)
     where
-        V: Into<Option<String>>,
+        V: Into<Option<Text>>,
     {
         self.subtitle = subtitle.into()
     }
@@ -446,7 +447,7 @@ impl FromXml for Source {
             match reader.read_event(&mut buf)? {
                 Event::Start(element) => match element.name() {
                     b"id" => source.id = atom_text(reader)?.unwrap_or_default(),
-                    b"title" => source.title = atom_text(reader)?.unwrap_or_default(),
+                    b"title" => source.title = Text::from_xml(reader, element.attributes())?,
                     b"updated" => {
                         source.updated =
                             atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime)
@@ -468,8 +469,12 @@ impl FromXml for Source {
                         .links
                         .push(Link::from_xml(reader, element.attributes())?),
                     b"logo" => source.logo = atom_text(reader)?,
-                    b"rights" => source.rights = atom_text(reader)?,
-                    b"subtitle" => source.subtitle = atom_text(reader)?,
+                    b"rights" => {
+                        source.rights = Some(Text::from_xml(reader, element.attributes())?)
+                    }
+                    b"subtitle" => {
+                        source.subtitle = Some(Text::from_xml(reader, element.attributes())?)
+                    }
                     n => reader.read_to_end(n, &mut Vec::new())?,
                 },
                 Event::End(_) => break,
@@ -488,7 +493,7 @@ impl ToXml for Source {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"source";
         writer.write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
-        writer.write_text_element(b"title", &*self.title)?;
+        writer.write_object_named(&self.title, b"title")?;
         writer.write_text_element(b"id", &*self.id)?;
         writer.write_text_element(b"updated", &self.updated.to_rfc3339())?;
         writer.write_objects_named(&self.authors, "author")?;
@@ -510,11 +515,11 @@ impl ToXml for Source {
         }
 
         if let Some(ref rights) = self.rights {
-            writer.write_text_element(b"rights", &**rights)?;
+            writer.write_object_named(rights, b"rights")?;
         }
 
         if let Some(ref subtitle) = self.subtitle {
-            writer.write_text_element(b"subtitle", &**subtitle)?;
+            writer.write_object_named(subtitle, b"subtitle")?;
         }
 
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
@@ -526,7 +531,7 @@ impl ToXml for Source {
 impl Default for Source {
     fn default() -> Self {
         Source {
-            title: String::new(),
+            title: Text::default(),
             id: String::new(),
             updated: default_fixed_datetime(),
             authors: Vec::new(),
