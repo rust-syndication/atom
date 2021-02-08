@@ -60,6 +60,7 @@ mod generator;
 mod link;
 mod person;
 mod source;
+mod text;
 
 mod error;
 mod fromxml;
@@ -94,4 +95,5 @@ pub use crate::person::PersonBuilder;
 pub use crate::source::Source;
 #[cfg(feature = "builders")]
 pub use crate::source::SourceBuilder;
+pub use crate::text::Text;
 pub use crate::util::FixedDateTime;
