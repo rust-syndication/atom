@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::BufReader;
 
 use crate::atom::extension::ExtensionMap;
-use crate::atom::Feed;
+use crate::atom::{Feed, Text};
 
 macro_rules! feed {
     ($f:expr) => {{
@@ -22,8 +22,8 @@ fn read_feed() {
     assert_eq!(feed.updated().to_rfc3339(), "2017-06-03T15:15:44-05:00");
     assert_eq!(feed.icon(), Some("http://example.com/icon.png"));
     assert_eq!(feed.logo(), Some("http://example.com/logo.png"));
-    assert_eq!(feed.rights(), Some("© 2017 John Doe"));
-    assert_eq!(feed.subtitle(), Some("Feed subtitle"));
+    assert_eq!(feed.rights().map(Text::as_str), Some("© 2017 John Doe"));
+    assert_eq!(feed.subtitle().map(Text::as_str), Some("Feed subtitle"));
     assert_eq!(feed.authors().len(), 2);
     assert_eq!(feed.categories().len(), 2);
     assert_eq!(feed.contributors().len(), 2);
@@ -48,8 +48,8 @@ fn read_entry() {
         entry.published().map(chrono::DateTime::to_rfc3339),
         Some("2017-06-01T15:15:44-05:00".to_string())
     );
-    assert_eq!(entry.summary(), Some("Entry summary"));
-    assert_eq!(entry.rights(), Some("© 2017 John Doe"));
+    assert_eq!(entry.summary().map(Text::as_str), Some("Entry summary"));
+    assert_eq!(entry.rights().map(Text::as_str), Some("© 2017 John Doe"));
 
     let content = entry.content().unwrap();
     assert_eq!(content.value(), Some("Entry content"));
@@ -72,8 +72,8 @@ fn read_entry_with_non_standard_dates() {
         entry.published().map(chrono::DateTime::to_rfc3339),
         Some("2017-06-01T15:15:44-05:00".to_string())
     );
-    assert_eq!(entry.summary(), Some("Entry summary"));
-    assert_eq!(entry.rights(), Some("© 2017 John Doe"));
+    assert_eq!(entry.summary().map(Text::as_str), Some("Entry summary"));
+    assert_eq!(entry.rights().map(Text::as_str), Some("© 2017 John Doe"));
 
     let content = entry.content().unwrap();
     assert_eq!(content.value(), Some("Entry content"));
@@ -131,8 +131,8 @@ fn read_source() {
     assert_eq!(source.updated().to_rfc3339(), "2017-06-03T15:15:44-05:00");
     assert_eq!(source.icon(), Some("http://example.com/icon.png"));
     assert_eq!(source.logo(), Some("http://example.com/logo.png"));
-    assert_eq!(source.rights(), Some("© 2017 John Doe"));
-    assert_eq!(source.subtitle(), Some("Feed subtitle"));
+    assert_eq!(source.rights().map(Text::as_str), Some("© 2017 John Doe"));
+    assert_eq!(source.subtitle().map(Text::as_str), Some("Feed subtitle"));
     assert_eq!(source.authors().len(), 2);
     assert_eq!(source.categories().len(), 2);
     assert_eq!(source.contributors().len(), 2);

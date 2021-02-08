@@ -17,8 +17,9 @@ use crate::fromxml::FromXml;
 use crate::generator::Generator;
 use crate::link::Link;
 use crate::person::Person;
+use crate::text::Text;
 use crate::toxml::{ToXml, WriterExt};
-use crate::util::{atom_any_text, atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
+use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
 
 /// Represents an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -27,7 +28,7 @@ use crate::util::{atom_any_text, atom_datetime, atom_text, default_fixed_datetim
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Feed {
     /// A human-readable title for the feed.
-    pub title: String,
+    pub title: Text,
     /// A universally unique and permanent URI.
     pub id: String,
     /// The last time the feed was modified in a significant way.
@@ -47,9 +48,9 @@ pub struct Feed {
     /// A larger image which provides visual identification for the feed.
     pub logo: Option<String>,
     /// Information about rights held in and over the feed.
-    pub rights: Option<String>,
+    pub rights: Option<Text>,
     /// A human-readable description or subtitle for the feed.
-    pub subtitle: Option<String>,
+    pub subtitle: Option<Text>,
     /// The entries contained in the feed.
     pub entries: Vec<Entry>,
     /// The extensions for the feed.
@@ -141,8 +142,8 @@ impl Feed {
     /// feed.set_title("Feed Title");
     /// assert_eq!(feed.title(), "Feed Title");
     /// ```
-    pub fn title(&self) -> &str {
-        self.title.as_str()
+    pub fn title(&self) -> &Text {
+        &self.title
     }
 
     /// Set the title of this feed.
@@ -157,7 +158,7 @@ impl Feed {
     /// ```
     pub fn set_title<V>(&mut self, title: V)
     where
-        V: Into<String>,
+        V: Into<Text>,
     {
         self.title = title.into();
     }
@@ -459,14 +460,14 @@ impl Feed {
     /// # Examples
     ///
     /// ```
-    /// use atom_syndication::Feed;
+    /// use atom_syndication::{Feed, Text};
     ///
     /// let mut feed = Feed::default();
-    /// feed.set_rights("© 2017 John Doe".to_string());
-    /// assert_eq!(feed.rights(), Some("© 2017 John Doe"));
+    /// feed.set_rights(Text::from("© 2017 John Doe"));
+    /// assert_eq!(feed.rights().map(Text::as_str), Some("© 2017 John Doe"));
     /// ```
-    pub fn rights(&self) -> Option<&str> {
-        self.rights.as_deref()
+    pub fn rights(&self) -> Option<&Text> {
+        self.rights.as_ref()
     }
 
     /// Set the information about the rights held in and over this feed.
@@ -474,14 +475,14 @@ impl Feed {
     /// # Examples
     ///
     /// ```
-    /// use atom_syndication::Feed;
+    /// use atom_syndication::{Feed, Text};
     ///
     /// let mut feed = Feed::default();
-    /// feed.set_rights("© 2017 John Doe".to_string());
+    /// feed.set_rights(Text::from("© 2017 John Doe"));
     /// ```
     pub fn set_rights<V>(&mut self, rights: V)
     where
-        V: Into<Option<String>>,
+        V: Into<Option<Text>>,
     {
         self.rights = rights.into()
     }
@@ -491,14 +492,14 @@ impl Feed {
     /// # Examples
     ///
     /// ```
-    /// use atom_syndication::Feed;
+    /// use atom_syndication::{Feed, Text};
     ///
     /// let mut feed = Feed::default();
-    /// feed.set_subtitle("Feed subtitle".to_string());
-    /// assert_eq!(feed.subtitle(), Some("Feed subtitle"));
+    /// feed.set_subtitle(Text::from("Feed subtitle"));
+    /// assert_eq!(feed.subtitle().map(Text::as_str), Some("Feed subtitle"));
     /// ```
-    pub fn subtitle(&self) -> Option<&str> {
-        self.subtitle.as_deref()
+    pub fn subtitle(&self) -> Option<&Text> {
+        self.subtitle.as_ref()
     }
 
     /// Set the description or subtitle of this feed.
@@ -506,14 +507,14 @@ impl Feed {
     /// # Examples
     ///
     /// ```
-    /// use atom_syndication::Feed;
+    /// use atom_syndication::{Feed, Text};
     ///
     /// let mut feed = Feed::default();
-    /// feed.set_subtitle("Feed subtitle".to_string());
+    /// feed.set_subtitle(Text::from("Feed subtitle"));
     /// ```
     pub fn set_subtitle<V>(&mut self, subtitle: V)
     where
-        V: Into<Option<String>>,
+        V: Into<Option<Text>>,
     {
         self.subtitle = subtitle.into()
     }
@@ -643,10 +644,7 @@ impl FromXml for Feed {
         loop {
             match reader.read_event(&mut buf)? {
                 Event::Start(element) => match element.name() {
-                    b"title" => {
-                        feed.title =
-                            atom_any_text(reader, element.attributes())?.unwrap_or_default()
-                    }
+                    b"title" => feed.title = Text::from_xml(reader, element.attributes())?,
                     b"id" => feed.id = atom_text(reader)?.unwrap_or_default(),
                     b"updated" => {
                         feed.updated = atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime)
@@ -668,8 +666,10 @@ impl FromXml for Feed {
                         .links
                         .push(Link::from_xml(reader, element.attributes())?),
                     b"logo" => feed.logo = atom_text(reader)?,
-                    b"rights" => feed.rights = atom_text(reader)?,
-                    b"subtitle" => feed.subtitle = atom_text(reader)?,
+                    b"rights" => feed.rights = Some(Text::from_xml(reader, element.attributes())?),
+                    b"subtitle" => {
+                        feed.subtitle = Some(Text::from_xml(reader, element.attributes())?)
+                    }
                     b"entry" => feed
                         .entries
                         .push(Entry::from_xml(reader, element.attributes())?),
@@ -710,7 +710,7 @@ impl ToXml for Feed {
         }
 
         writer.write_event(Event::Start(element))?;
-        writer.write_text_element(b"title", &*self.title)?;
+        writer.write_object_named(&self.title, b"title")?;
         writer.write_text_element(b"id", &*self.id)?;
         writer.write_text_element(b"updated", &*self.updated.to_rfc3339())?;
         writer.write_objects_named(&self.authors, "author")?;
@@ -732,11 +732,11 @@ impl ToXml for Feed {
         }
 
         if let Some(ref rights) = self.rights {
-            writer.write_text_element(b"rights", &**rights)?;
+            writer.write_object_named(rights, b"rights")?;
         }
 
         if let Some(ref subtitle) = self.subtitle {
-            writer.write_text_element(b"subtitle", &**subtitle)?;
+            writer.write_object_named(subtitle, b"subtitle")?;
         }
 
         writer.write_objects(&self.entries)?;
@@ -772,7 +772,7 @@ impl ToString for Feed {
 impl Default for Feed {
     fn default() -> Self {
         Feed {
-            title: String::new(),
+            title: Text::default(),
             id: String::new(),
             updated: default_fixed_datetime(),
             authors: Vec::new(),
