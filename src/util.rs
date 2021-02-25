@@ -51,7 +51,7 @@ pub fn atom_text<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, E
                 result.push_str("/>");
             }
             Event::CData(text) => {
-                let decoded = reader.decode(text.escaped());
+                let decoded = text.unescape_and_decode(reader)?;
                 result.push_str(&decoded);
             }
             Event::Text(text) => {
