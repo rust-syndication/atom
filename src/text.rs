@@ -15,6 +15,40 @@ use crate::toxml::ToXmlNamed;
 use crate::util::{atom_text, atom_xhtml};
 
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// Represents the value of the [`type` attribute of a text construct](https://tools.ietf.org/html/rfc4287#section-3.1.1)
+/// in an Atom feed, e.g. the type of the content stored in the element.
+pub enum ContentType {
+    /// default value
+    Text,
+    Html,
+    Xhtml,
+}
+
+impl Default for ContentType {
+    fn default() -> Self {
+        ContentType::Text
+    }
+}
+
+impl ContentType {
+    fn as_str(&self) -> &'static str {
+        use ContentType::*;
+        match self {
+            Text => "text",
+            Html => "html",
+            Xhtml => "xhtml",
+        }
+    }
+}
+
+impl AsRef<str> for ContentType {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Clone, PartialEq, Default)]
 /// Represents a [text construct](https://tools.ietf.org/html/rfc4287#section-3.1) in an Atom feed.
 pub struct Text {
@@ -25,9 +59,7 @@ pub struct Text {
     /// Indicates the natural language for the element.
     pub lang: Option<String>,
     /// Type of content stored in the element.
-    /// When present, the value MUST be one of "text", "html", or "xhtml".
-    /// When absent, "text" is assumed.
-    pub content_type: Option<String>,
+    pub content_type: ContentType,
 }
 
 impl Text {
@@ -93,13 +125,21 @@ impl FromXml for Text {
                 match att.key {
                     b"base" => text.base = Some(att.unescape_and_decode_value(reader)?),
                     b"lang" => text.lang = Some(att.unescape_and_decode_value(reader)?),
-                    b"type" => text.content_type = Some(att.unescape_and_decode_value(reader)?),
+                    b"type" => {
+                        text.content_type = match att.unescape_and_decode_value(reader)?.as_str() {
+                            "text" => ContentType::Text,
+                            "html" => ContentType::Html,
+                            "xhtml" => ContentType::Xhtml,
+                            // assume the default, I'm unsure if this should return an error instead
+                            _ => ContentType::Text,
+                        }
+                    }
                     _ => {}
                 }
             }
         }
 
-        let content = if text.content_type.as_deref() == Some("xhtml") {
+        let content = if text.content_type == ContentType::Xhtml {
             atom_xhtml(reader)?
         } else {
             atom_text(reader)?
@@ -125,8 +165,8 @@ impl ToXmlNamed for Text {
         if let Some(ref lang) = self.lang {
             element.push_attribute(("lang", lang.as_str()));
         }
-        if let Some(ref content_type) = self.content_type {
-            element.push_attribute(("type", content_type.as_str()));
+        if self.content_type != ContentType::default() {
+            element.push_attribute(("type", self.content_type.as_str()));
         }
         writer.write_event(Event::Start(element))?;
         writer.write_event(Event::Text(BytesText::from_plain_str(self.value.as_str())))?;
