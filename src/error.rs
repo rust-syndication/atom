@@ -6,6 +6,7 @@ use quick_xml::Error as XmlError;
 
 #[derive(Debug)]
 /// An error that occurred while performing an Atom operation.
+#[non_exhaustive]
 pub enum Error {
     /// Unable to parse XML.
     Xml(XmlError),
