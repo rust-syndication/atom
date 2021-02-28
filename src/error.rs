@@ -18,6 +18,13 @@ pub enum Error {
     Eof,
     /// The format of the timestamp is wrong.
     WrongDatetime(String),
+    /// The value of an attribute is wrong.
+    WrongAttribute {
+        /// The name of the attribute.
+        attribute: &'static str,
+        /// Invalid value.
+        value: String,
+    },
 }
 
 impl StdError for Error {
@@ -28,6 +35,7 @@ impl StdError for Error {
             Error::InvalidStartTag => None,
             Error::Eof => None,
             Error::WrongDatetime(_) => None,
+            Error::WrongAttribute { .. } => None,
         }
     }
 }
@@ -43,6 +51,14 @@ impl fmt::Display for Error {
                 f,
                 "timestamps must be formatted by RFC3339, rather than {}",
                 datetime
+            ),
+            Error::WrongAttribute {
+                attribute,
+                ref value,
+            } => write!(
+                f,
+                "Unsupported value of attribute {}: '{}'.",
+                attribute, value
             ),
         }
     }

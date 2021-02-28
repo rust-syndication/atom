@@ -1,9 +1,6 @@
-extern crate atom_syndication as atom;
-
+use atom_syndication::{Feed, Text};
 use std::fs::File;
 use std::io::BufReader;
-
-use crate::atom::Feed;
 
 macro_rules! feed {
     ($f:expr) => {{
@@ -36,6 +33,22 @@ fn text_empty() {
 fn text_html() {
     let feed = feed!("tests/data/text_html.xml");
     assert_eq!(feed.title(), "<p>Feed Title</p>");
+}
+
+#[test]
+fn text_write_html() {
+    let mut feed = Feed::default();
+    feed.set_title(Text::html("<p>Feed Title</p>"));
+    let xml = feed.to_string();
+    assert!(xml.contains(r#"<title type="html">&lt;p&gt;Feed Title&lt;/p&gt;</title>"#));
+}
+
+#[test]
+fn text_write_xhtml() {
+    let mut feed = Feed::default();
+    feed.set_title(Text::xhtml("<p>Feed Title</p>"));
+    let xml = feed.to_string();
+    assert!(xml.contains(r#"<title type="xhtml">&lt;p&gt;Feed Title&lt;/p&gt;</title>"#));
 }
 
 #[test]
