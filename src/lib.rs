@@ -95,5 +95,5 @@ pub use crate::person::PersonBuilder;
 pub use crate::source::Source;
 #[cfg(feature = "builders")]
 pub use crate::source::SourceBuilder;
-pub use crate::text::{ContentType as TextContentType, Text};
+pub use crate::text::{Text, TextType};
 pub use crate::util::FixedDateTime;
