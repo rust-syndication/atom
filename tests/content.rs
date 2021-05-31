@@ -47,6 +47,18 @@ fn content_text_html() {
 }
 
 #[test]
+fn content_text_html_common_attributes() {
+    let feed = feed!("tests/data/content_text_html_common.xml");
+    let content = feed.entries().first().unwrap().content().unwrap();
+    assert_eq!(content.base(), Some("http://example.com/blog/"));
+    assert_eq!(
+        content.value(),
+        Some("<p>Entry content</p><a href=\"2021-05-51/article.html\">Read more</a>")
+    );
+    assert_eq!(content.content_type(), Some("html"));
+}
+
+#[test]
 fn content_text_other() {
     let feed = feed!("tests/data/content_text_other.xml");
     let content = feed.entries().first().unwrap().content().unwrap();

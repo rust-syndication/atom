@@ -17,6 +17,10 @@ use crate::util::atom_any_text;
 #[cfg_attr(feature = "builders", derive(Builder))]
 #[cfg_attr(feature = "builders", builder(setter(into), default))]
 pub struct Content {
+    /// Base URL for resolving any relative references found in the element.
+    pub base: Option<String>,
+    /// Indicates the natural language for the element.
+    pub lang: Option<String>,
     /// The text value of the content.
     pub value: Option<String>,
     /// The URI of where the content can be found.
@@ -26,6 +30,32 @@ pub struct Content {
 }
 
 impl Content {
+    /// Return base URL of the content.
+    pub fn base(&self) -> Option<&str> {
+        self.base.as_deref()
+    }
+
+    /// Set base URL of the content.
+    pub fn set_base<V>(&mut self, base: V)
+    where
+        V: Into<Option<String>>,
+    {
+        self.base = base.into();
+    }
+
+    /// Return natural language of the content.
+    pub fn lang(&self) -> Option<&str> {
+        self.lang.as_deref()
+    }
+
+    /// Set the base URL of the content.
+    pub fn set_lang<V>(&mut self, lang: V)
+    where
+        V: Into<Option<String>>,
+    {
+        self.lang = lang.into();
+    }
+
     /// Return the text value of the content.
     ///
     /// If the `content_type` is neither `"text"`, `"html"`, or `"xhtml"` then the value should
@@ -139,6 +169,8 @@ impl FromXml for Content {
         for attr in atts.with_checks(false) {
             if let Ok(att) = attr {
                 match att.key {
+                    b"xml:base" => content.base = Some(att.unescape_and_decode_value(reader)?),
+                    b"xml:lang" => content.lang = Some(att.unescape_and_decode_value(reader)?),
                     b"type" => content.content_type = Some(att.unescape_and_decode_value(reader)?),
                     b"src" => content.src = Some(att.unescape_and_decode_value(reader)?),
                     _ => {}
@@ -156,6 +188,14 @@ impl ToXml for Content {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"content";
         let mut element = BytesStart::borrowed(name, name.len());
+
+        if let Some(ref base) = self.base {
+            element.push_attribute(("xml:base", base.as_str()));
+        }
+
+        if let Some(ref lang) = self.lang {
+            element.push_attribute(("xml:lang", lang.as_str()));
+        }
 
         if let Some(ref content_type) = self.content_type {
             if content_type == "xhtml" {
