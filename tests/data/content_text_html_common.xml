@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<entry>
+		<content type="html" xml:base="http://example.com/blog/" xml:lang="en_US">&lt;p&gt;Entry content&lt;/p&gt;&lt;a href="2021-05-51/article.html"&gt;Read more&lt;/a&gt;</content>
+	</entry>
+</feed>
