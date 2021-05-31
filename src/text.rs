@@ -158,8 +158,8 @@ impl FromXml for Text {
         for attr in atts.with_checks(false) {
             if let Ok(att) = attr {
                 match att.key {
-                    b"base" => text.base = Some(att.unescape_and_decode_value(reader)?),
-                    b"lang" => text.lang = Some(att.unescape_and_decode_value(reader)?),
+                    b"xml:base" => text.base = Some(att.unescape_and_decode_value(reader)?),
+                    b"xml:lang" => text.lang = Some(att.unescape_and_decode_value(reader)?),
                     b"type" => text.r#type = att.unescape_and_decode_value(reader)?.parse()?,
                     _ => {}
                 }
@@ -187,16 +187,20 @@ impl ToXmlNamed for Text {
         let name = name.as_ref();
         let mut element = BytesStart::borrowed(name, name.len());
         if let Some(ref base) = self.base {
-            element.push_attribute(("base", base.as_str()));
+            element.push_attribute(("xml:base", base.as_str()));
         }
         if let Some(ref lang) = self.lang {
-            element.push_attribute(("lang", lang.as_str()));
+            element.push_attribute(("xml:lang", lang.as_str()));
         }
         if self.r#type != TextType::default() {
             element.push_attribute(("type", self.r#type.as_str()));
         }
         writer.write_event(Event::Start(element))?;
-        writer.write_event(Event::Text(BytesText::from_plain_str(self.value.as_str())))?;
+        if self.r#type == TextType::Xhtml {
+            writer.write_event(Event::Text(BytesText::from_escaped(self.value.as_bytes())))?;
+        } else {
+            writer.write_event(Event::Text(BytesText::from_plain_str(self.value.as_str())))?;
+        }
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
 
         Ok(())
