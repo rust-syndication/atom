@@ -3,7 +3,7 @@ use std::io::{BufRead, Write};
 use std::str::{self, FromStr};
 
 use quick_xml::events::attributes::Attributes;
-use quick_xml::events::{BytesEnd, BytesStart, Event};
+use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
@@ -127,6 +127,8 @@ impl Feed {
     /// ```
     pub fn write_to<W: Write>(&self, writer: W) -> Result<W, Error> {
         let mut writer = Writer::new(writer);
+        writer.write_event(Event::Decl(BytesDecl::new(b"1.0", None, None)))?;
+        writer.write_event(Event::Text(BytesText::from_escaped("\n".as_bytes())))?;
         self.to_xml(&mut writer)?;
         Ok(writer.into_inner())
     }
