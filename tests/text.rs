@@ -66,7 +66,9 @@ fn text_write_html_with_lang() {
     title.lang = Some("en".to_string());
     feed.set_title(title);
     let xml = feed.to_string();
-    assert!(xml.contains(r#"<title lang="en" type="html">&lt;p&gt;Feed Title&lt;/p&gt;</title>"#));
+    assert!(
+        xml.contains(r#"<title xml:lang="en" type="html">&lt;p&gt;Feed Title&lt;/p&gt;</title>"#)
+    );
 }
 
 #[test]
@@ -77,15 +79,19 @@ fn text_write_html_with_base_and_lang() {
     title.lang = Some("en".to_string());
     feed.set_title(title);
     let xml = feed.to_string();
-    assert!(xml.contains(r#"<title base="http://example.com/articles/" lang="en" type="html">&lt;p&gt;Feed Title&lt;/p&gt;</title>"#));
+    assert!(xml.contains(r#"<title xml:base="http://example.com/articles/" xml:lang="en" type="html">&lt;p&gt;Feed Title&lt;/p&gt;</title>"#));
 }
 
 #[test]
 fn text_write_xhtml() {
     let mut feed = Feed::default();
-    feed.set_title(Text::xhtml("<p>Feed Title</p>"));
+    feed.set_title(Text::xhtml(
+        "<p xmlns=\"http://www.w3.org/1999/xhtml\">Feed Title</p>",
+    ));
     let xml = feed.to_string();
-    assert!(xml.contains(r#"<title type="xhtml">&lt;p&gt;Feed Title&lt;/p&gt;</title>"#));
+    assert!(xml.contains(
+        r#"<title type="xhtml"><p xmlns="http://www.w3.org/1999/xhtml">Feed Title</p></title>"#
+    ));
 }
 
 #[test]
