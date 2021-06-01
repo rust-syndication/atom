@@ -173,15 +173,13 @@ impl FromXml for Content {
     ) -> Result<Self, Error> {
         let mut content = Content::default();
 
-        for attr in atts.with_checks(false) {
-            if let Ok(att) = attr {
-                match att.key {
-                    b"xml:base" => content.base = Some(att.unescape_and_decode_value(reader)?),
-                    b"xml:lang" => content.lang = Some(att.unescape_and_decode_value(reader)?),
-                    b"type" => content.content_type = Some(att.unescape_and_decode_value(reader)?),
-                    b"src" => content.src = Some(att.unescape_and_decode_value(reader)?),
-                    _ => {}
-                }
+        for att in atts.with_checks(false).flatten() {
+            match att.key {
+                b"xml:base" => content.base = Some(att.unescape_and_decode_value(reader)?),
+                b"xml:lang" => content.lang = Some(att.unescape_and_decode_value(reader)?),
+                b"type" => content.content_type = Some(att.unescape_and_decode_value(reader)?),
+                b"src" => content.src = Some(att.unescape_and_decode_value(reader)?),
+                _ => {}
             }
         }
 

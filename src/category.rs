@@ -137,14 +137,12 @@ impl FromXml for Category {
     ) -> Result<Self, Error> {
         let mut category = Category::default();
 
-        for attr in atts.with_checks(false) {
-            if let Ok(att) = attr {
-                match att.key {
-                    b"term" => category.term = att.unescape_and_decode_value(reader)?,
-                    b"scheme" => category.scheme = Some(att.unescape_and_decode_value(reader)?),
-                    b"label" => category.label = Some(att.unescape_and_decode_value(reader)?),
-                    _ => {}
-                }
+        for att in atts.with_checks(false).flatten() {
+            match att.key {
+                b"term" => category.term = att.unescape_and_decode_value(reader)?,
+                b"scheme" => category.scheme = Some(att.unescape_and_decode_value(reader)?),
+                b"label" => category.label = Some(att.unescape_and_decode_value(reader)?),
+                _ => {}
             }
         }
 

@@ -98,16 +98,14 @@ impl Feed {
                     if element.name() == b"feed" {
                         let mut feed = Feed::from_xml(&mut reader, element.attributes())?;
 
-                        for attr in element.attributes().with_checks(false) {
-                            if let Ok(attr) = attr {
-                                if !attr.key.starts_with(b"xmlns:") || attr.key == b"xmlns:dc" {
-                                    continue;
-                                }
-
-                                let key = str::from_utf8(&attr.key[6..])?.to_string();
-                                let value = attr.unescape_and_decode_value(&reader)?;
-                                feed.namespaces.insert(key, value);
+                        for attr in element.attributes().with_checks(false).flatten() {
+                            if !attr.key.starts_with(b"xmlns:") || attr.key == b"xmlns:dc" {
+                                continue;
                             }
+
+                            let key = str::from_utf8(&attr.key[6..])?.to_string();
+                            let value = attr.unescape_and_decode_value(&reader)?;
+                            feed.namespaces.insert(key, value);
                         }
 
                         return Ok(feed);

@@ -1,6 +1,6 @@
 use std::io::BufRead;
 
-use quick_xml::events::attributes::{Attribute, Attributes};
+use quick_xml::events::attributes::Attributes;
 use quick_xml::events::Event;
 use quick_xml::Reader;
 
@@ -134,12 +134,12 @@ pub fn atom_any_text<B: BufRead>(
     reader: &mut Reader<B>,
     mut atts: Attributes<'_>,
 ) -> Result<Option<String>, Error> {
-    let mut content_type = None;
-    for attr in atts.with_checks(false) {
-        if let Ok(att @ Attribute { key: b"type", .. }) = attr {
-            content_type = Some(att.unescape_and_decode_value(reader)?);
-        }
-    }
+    let content_type = atts
+        .with_checks(false)
+        .flatten()
+        .find(|attr| attr.key == b"type")
+        .map(|attr| attr.unescape_and_decode_value(reader))
+        .transpose()?;
 
     match content_type {
         Some(ref t) if t == "xhtml" => atom_xhtml(reader),
