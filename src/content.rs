@@ -15,7 +15,14 @@ use crate::util::atom_any_text;
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Default, Clone, PartialEq)]
 #[cfg_attr(feature = "builders", derive(Builder))]
-#[cfg_attr(feature = "builders", builder(setter(into), default))]
+#[cfg_attr(
+    feature = "builders",
+    builder(
+        setter(into),
+        default,
+        build_fn(name = "build_impl", private, error = "never::Never")
+    )
+)]
 pub struct Content {
     /// Base URL for resolving any relative references found in the element.
     pub base: Option<String>,
@@ -218,5 +225,13 @@ impl ToXml for Content {
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
 
         Ok(())
+    }
+}
+
+#[cfg(feature = "builders")]
+impl ContentBuilder {
+    /// Builds a new `Content`.
+    pub fn build(&self) -> Content {
+        self.build_impl().unwrap()
     }
 }

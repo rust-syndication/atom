@@ -15,7 +15,14 @@ use crate::util::atom_text;
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Default, Clone, PartialEq)]
 #[cfg_attr(feature = "builders", derive(Builder))]
-#[cfg_attr(feature = "builders", builder(setter(into), default))]
+#[cfg_attr(
+    feature = "builders",
+    builder(
+        setter(into),
+        default,
+        build_fn(name = "build_impl", private, error = "never::Never")
+    )
+)]
 pub struct Generator {
     /// The name of the generator.
     pub value: String,
@@ -165,5 +172,13 @@ impl ToXml for Generator {
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
 
         Ok(())
+    }
+}
+
+#[cfg(feature = "builders")]
+impl GeneratorBuilder {
+    /// Builds a new `Generator`.
+    pub fn build(&self) -> Generator {
+        self.build_impl().unwrap()
     }
 }

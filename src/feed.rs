@@ -25,7 +25,14 @@ use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTim
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "builders", derive(Builder))]
-#[cfg_attr(feature = "builders", builder(setter(into), default))]
+#[cfg_attr(
+    feature = "builders",
+    builder(
+        setter(into),
+        default,
+        build_fn(name = "build_impl", private, error = "never::Never")
+    )
+)]
 pub struct Feed {
     /// A human-readable title for the feed.
     pub title: Text,
@@ -34,16 +41,20 @@ pub struct Feed {
     /// The last time the feed was modified in a significant way.
     pub updated: FixedDateTime,
     /// The authors of the feed.
+    #[cfg_attr(feature = "builders", builder(setter(each = "author")))]
     pub authors: Vec<Person>,
     /// The categories that the feed belongs to.
+    #[cfg_attr(feature = "builders", builder(setter(each = "category")))]
     pub categories: Vec<Category>,
     /// The contributors to the feed.
+    #[cfg_attr(feature = "builders", builder(setter(each = "contributor")))]
     pub contributors: Vec<Person>,
     /// The software used to generate the feed.
     pub generator: Option<Generator>,
     /// A small image which provides visual identification for the feed.
     pub icon: Option<String>,
     /// The Web pages related to the feed.
+    #[cfg_attr(feature = "builders", builder(setter(each = "link")))]
     pub links: Vec<Link>,
     /// A larger image which provides visual identification for the feed.
     pub logo: Option<String>,
@@ -52,10 +63,13 @@ pub struct Feed {
     /// A human-readable description or subtitle for the feed.
     pub subtitle: Option<Text>,
     /// The entries contained in the feed.
+    #[cfg_attr(feature = "builders", builder(setter(each = "entry")))]
     pub entries: Vec<Entry>,
     /// The extensions for the feed.
+    #[cfg_attr(feature = "builders", builder(setter(each = "extension")))]
     pub extensions: ExtensionMap,
     /// The namespaces present in the feed tag.
+    #[cfg_attr(feature = "builders", builder(setter(each = "namespace")))]
     pub namespaces: HashMap<String, String>,
 }
 
@@ -790,5 +804,13 @@ impl Default for Feed {
             extensions: ExtensionMap::default(),
             namespaces: HashMap::default(),
         }
+    }
+}
+
+#[cfg(feature = "builders")]
+impl FeedBuilder {
+    /// Builds a new `Feed`.
+    pub fn build(&self) -> Feed {
+        self.build_impl().unwrap()
     }
 }

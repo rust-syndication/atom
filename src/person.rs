@@ -15,7 +15,14 @@ use crate::util::atom_text;
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Default, Clone, PartialEq)]
 #[cfg_attr(feature = "builders", derive(Builder))]
-#[cfg_attr(feature = "builders", builder(setter(into), default))]
+#[cfg_attr(
+    feature = "builders",
+    builder(
+        setter(into),
+        default,
+        build_fn(name = "build_impl", private, error = "never::Never")
+    )
+)]
 pub struct Person {
     /// A human-readable name for the person.
     pub name: String,
@@ -169,5 +176,13 @@ impl ToXmlNamed for Person {
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
 
         Ok(())
+    }
+}
+
+#[cfg(feature = "builders")]
+impl PersonBuilder {
+    /// Builds a new `Person`.
+    pub fn build(&self) -> Person {
+        self.build_impl().unwrap()
     }
 }
