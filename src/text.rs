@@ -162,14 +162,12 @@ impl FromXml for Text {
     ) -> Result<Self, Error> {
         let mut text = Text::default();
 
-        for attr in atts.with_checks(false) {
-            if let Ok(att) = attr {
-                match att.key {
-                    b"xml:base" => text.base = Some(att.unescape_and_decode_value(reader)?),
-                    b"xml:lang" => text.lang = Some(att.unescape_and_decode_value(reader)?),
-                    b"type" => text.r#type = att.unescape_and_decode_value(reader)?.parse()?,
-                    _ => {}
-                }
+        for att in atts.with_checks(false).flatten() {
+            match att.key {
+                b"xml:base" => text.base = Some(att.unescape_and_decode_value(reader)?),
+                b"xml:lang" => text.lang = Some(att.unescape_and_decode_value(reader)?),
+                b"type" => text.r#type = att.unescape_and_decode_value(reader)?.parse()?,
+                _ => {}
             }
         }
 

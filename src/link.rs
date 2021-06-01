@@ -251,17 +251,15 @@ impl FromXml for Link {
     ) -> Result<Self, Error> {
         let mut link = Link::default();
 
-        for attr in atts.with_checks(false) {
-            if let Ok(att) = attr {
-                match att.key {
-                    b"href" => link.href = att.unescape_and_decode_value(reader)?,
-                    b"rel" => link.rel = att.unescape_and_decode_value(reader)?,
-                    b"hreflang" => link.hreflang = Some(att.unescape_and_decode_value(reader)?),
-                    b"type" => link.mime_type = Some(att.unescape_and_decode_value(reader)?),
-                    b"title" => link.title = Some(att.unescape_and_decode_value(reader)?),
-                    b"length" => link.length = Some(att.unescape_and_decode_value(reader)?),
-                    _ => {}
-                }
+        for att in atts.with_checks(false).flatten() {
+            match att.key {
+                b"href" => link.href = att.unescape_and_decode_value(reader)?,
+                b"rel" => link.rel = att.unescape_and_decode_value(reader)?,
+                b"hreflang" => link.hreflang = Some(att.unescape_and_decode_value(reader)?),
+                b"type" => link.mime_type = Some(att.unescape_and_decode_value(reader)?),
+                b"title" => link.title = Some(att.unescape_and_decode_value(reader)?),
+                b"length" => link.length = Some(att.unescape_and_decode_value(reader)?),
+                _ => {}
             }
         }
 

@@ -138,13 +138,11 @@ impl FromXml for Generator {
     ) -> Result<Self, Error> {
         let mut generator = Generator::default();
 
-        for attr in atts.with_checks(false) {
-            if let Ok(att) = attr {
-                match att.key {
-                    b"uri" => generator.uri = Some(att.unescape_and_decode_value(reader)?),
-                    b"version" => generator.version = Some(att.unescape_and_decode_value(reader)?),
-                    _ => {}
-                }
+        for att in atts.with_checks(false).flatten() {
+            match att.key {
+                b"uri" => generator.uri = Some(att.unescape_and_decode_value(reader)?),
+                b"version" => generator.version = Some(att.unescape_and_decode_value(reader)?),
+                _ => {}
             }
         }
 
