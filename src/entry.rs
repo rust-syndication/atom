@@ -23,7 +23,14 @@ use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTim
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "builders", derive(Builder))]
-#[cfg_attr(feature = "builders", builder(setter(into), default))]
+#[cfg_attr(
+    feature = "builders",
+    builder(
+        setter(into),
+        default,
+        build_fn(name = "build_impl", private, error = "never::Never")
+    )
+)]
 pub struct Entry {
     /// A human-readable title for the entry.
     pub title: Text,
@@ -32,12 +39,16 @@ pub struct Entry {
     /// The last time the entry was modified.
     pub updated: FixedDateTime,
     /// The authors of the feed.
+    #[cfg_attr(feature = "builders", builder(setter(each = "author")))]
     pub authors: Vec<Person>,
     /// The categories that the entry belongs to.
+    #[cfg_attr(feature = "builders", builder(setter(each = "category")))]
     pub categories: Vec<Category>,
     /// The contributors to the entry.
+    #[cfg_attr(feature = "builders", builder(setter(each = "contributor")))]
     pub contributors: Vec<Person>,
     /// The Web pages related to the entry.
+    #[cfg_attr(feature = "builders", builder(setter(each = "link")))]
     pub links: Vec<Link>,
     /// The time of the initial creation or first availability of the entry.
     pub published: Option<FixedDateTime>,
@@ -50,6 +61,7 @@ pub struct Entry {
     /// Contains or links to the complete content of the entry.
     pub content: Option<Content>,
     /// The extensions for this entry.
+    #[cfg_attr(feature = "builders", builder(setter(each = "extension")))]
     pub extensions: ExtensionMap,
 }
 
@@ -619,5 +631,13 @@ impl Default for Entry {
             content: None,
             extensions: ExtensionMap::default(),
         }
+    }
+}
+
+#[cfg(feature = "builders")]
+impl EntryBuilder {
+    /// Builds a new `Entry`.
+    pub fn build(&self) -> Entry {
+        self.build_impl().unwrap()
     }
 }

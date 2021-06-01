@@ -63,7 +63,14 @@ impl FromStr for TextType {
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Clone, PartialEq, Default)]
 #[cfg_attr(feature = "builders", derive(Builder))]
-#[cfg_attr(feature = "builders", builder(setter(into), default))]
+#[cfg_attr(
+    feature = "builders",
+    builder(
+        setter(into),
+        default,
+        build_fn(name = "build_impl", private, error = "never::Never")
+    )
+)]
 /// Represents a [text construct](https://tools.ietf.org/html/rfc4287#section-3.1) in an Atom feed.
 pub struct Text {
     /// Content of the text construct
@@ -204,5 +211,13 @@ impl ToXmlNamed for Text {
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
 
         Ok(())
+    }
+}
+
+#[cfg(feature = "builders")]
+impl TextBuilder {
+    /// Builds a new `Text`.
+    pub fn build(&self) -> Text {
+        self.build_impl().unwrap()
     }
 }

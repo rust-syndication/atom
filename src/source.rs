@@ -20,7 +20,14 @@ use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTim
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "builders", derive(Builder))]
-#[cfg_attr(feature = "builders", builder(setter(into), default))]
+#[cfg_attr(
+    feature = "builders",
+    builder(
+        setter(into),
+        default,
+        build_fn(name = "build_impl", private, error = "never::Never")
+    )
+)]
 pub struct Source {
     /// A human-readable title for the feed.
     pub title: Text,
@@ -29,16 +36,20 @@ pub struct Source {
     /// The last time the feed was modified in a significant way.
     pub updated: FixedDateTime,
     /// The authors of the feed.
+    #[cfg_attr(feature = "builders", builder(setter(each = "author")))]
     pub authors: Vec<Person>,
     /// The categories that the feed belongs to.
+    #[cfg_attr(feature = "builders", builder(setter(each = "category")))]
     pub categories: Vec<Category>,
     /// The contributors to the feed.
+    #[cfg_attr(feature = "builders", builder(setter(each = "contributor")))]
     pub contributors: Vec<Person>,
     /// The software used to generate the feed.
     pub generator: Option<Generator>,
     /// A small image which provides visual identification for the feed.
     pub icon: Option<String>,
     /// The Web pages related to the feed.
+    #[cfg_attr(feature = "builders", builder(setter(each = "link")))]
     pub links: Vec<Link>,
     /// A larger image which provides visual identification for the feed.
     pub logo: Option<String>,
@@ -544,5 +555,13 @@ impl Default for Source {
             rights: None,
             subtitle: None,
         }
+    }
+}
+
+#[cfg(feature = "builders")]
+impl SourceBuilder {
+    /// Builds a new `Source`.
+    pub fn build(&self) -> Source {
+        self.build_impl().unwrap()
     }
 }

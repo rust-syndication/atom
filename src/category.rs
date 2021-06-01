@@ -14,7 +14,14 @@ use crate::toxml::ToXml;
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Default, Clone, PartialEq)]
 #[cfg_attr(feature = "builders", derive(Builder))]
-#[cfg_attr(feature = "builders", builder(setter(into), default))]
+#[cfg_attr(
+    feature = "builders",
+    builder(
+        setter(into),
+        default,
+        build_fn(name = "build_impl", private, error = "never::Never")
+    )
+)]
 pub struct Category {
     /// Identifies the category.
     pub term: String,
@@ -164,5 +171,13 @@ impl ToXml for Category {
         writer.write_event(Event::Empty(element))?;
 
         Ok(())
+    }
+}
+
+#[cfg(feature = "builders")]
+impl CategoryBuilder {
+    /// Builds a new `Category`.
+    pub fn build(&self) -> Category {
+        self.build_impl().unwrap()
     }
 }
