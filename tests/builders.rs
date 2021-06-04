@@ -2,7 +2,7 @@
 
 use atom_syndication::extension::*;
 use atom_syndication::*;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::str::FromStr;
 
 fn join_lines(text: &str) -> String {
@@ -79,7 +79,7 @@ fn test_builders() {
                         .build(),
                 )
                 .extension(("ext".to_string(), {
-                    let mut map = HashMap::new();
+                    let mut map = BTreeMap::new();
                     map.insert(
                         "title".to_string(),
                         vec![ExtensionBuilder::default()

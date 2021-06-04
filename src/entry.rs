@@ -464,13 +464,13 @@ impl Entry {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::BTreeMap;
     /// use atom_syndication::Entry;
     /// use atom_syndication::extension::{ExtensionMap, Extension};
     ///
     /// let extension = Extension::default();
     ///
-    /// let mut item_map = HashMap::<String, Vec<Extension>>::new();
+    /// let mut item_map = BTreeMap::<String, Vec<Extension>>::new();
     /// item_map.insert("ext:name".to_string(), vec![extension]);
     ///
     /// let mut extension_map = ExtensionMap::default();

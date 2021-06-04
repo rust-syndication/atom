@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::io::BufRead;
 use std::str;
 
@@ -32,7 +32,7 @@ where
     let ext = parse_extension_element(reader, atts)?;
 
     if !extensions.contains_key(ns) {
-        extensions.insert(ns.to_string(), HashMap::new());
+        extensions.insert(ns.to_string(), BTreeMap::new());
     }
 
     let map = match extensions.get_mut(ns) {

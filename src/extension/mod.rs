@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::io::Write;
 use std::str;
 
@@ -11,7 +11,7 @@ use crate::toxml::ToXml;
 pub(crate) mod util;
 
 /// A map of extension namespace prefixes to local names to elements.
-pub type ExtensionMap = HashMap<String, HashMap<String, Vec<Extension>>>;
+pub type ExtensionMap = BTreeMap<String, BTreeMap<String, Vec<Extension>>>;
 
 /// A namespaced extension.
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -32,10 +32,10 @@ pub struct Extension {
     pub value: Option<String>,
     /// The attributes for the extension element.
     #[cfg_attr(feature = "builders", builder(setter(each = "attr")))]
-    pub attrs: HashMap<String, String>,
+    pub attrs: BTreeMap<String, String>,
     /// The children of the extension element. A map of local names to child elements.
     #[cfg_attr(feature = "builders", builder(setter(each = "child")))]
-    pub children: HashMap<String, Vec<Extension>>,
+    pub children: BTreeMap<String, Vec<Extension>>,
 }
 
 impl Extension {
@@ -108,16 +108,16 @@ impl Extension {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::BTreeMap;
     /// use atom_syndication::extension::Extension;
     ///
     /// let mut extension = Extension::default();
-    /// let mut attrs = HashMap::<String, String>::new();
+    /// let mut attrs = BTreeMap::<String, String>::new();
     /// attrs.insert("email".to_string(), "johndoe@example.com".to_string());
     /// extension.set_attrs(attrs.clone());
     /// assert_eq!(*extension.attrs(), attrs);
     /// ```
-    pub fn attrs(&self) -> &HashMap<String, String> {
+    pub fn attrs(&self) -> &BTreeMap<String, String> {
         &self.attrs
     }
 
@@ -126,15 +126,15 @@ impl Extension {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::BTreeMap;
     /// use atom_syndication::extension::Extension;
     ///
     /// let mut extension = Extension::default();
-    /// extension.set_attrs(HashMap::new());
+    /// extension.set_attrs(BTreeMap::new());
     /// ```
     pub fn set_attrs<V>(&mut self, attrs: V)
     where
-        V: Into<HashMap<String, String>>,
+        V: Into<BTreeMap<String, String>>,
     {
         self.attrs = attrs.into();
     }
@@ -146,16 +146,16 @@ impl Extension {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::BTreeMap;
     /// use atom_syndication::extension::Extension;
     ///
     /// let mut extension = Extension::default();
-    /// let mut children = HashMap::<String, Vec<Extension>>::new();
+    /// let mut children = BTreeMap::<String, Vec<Extension>>::new();
     /// children.insert("ext:child".to_string(), Vec::new());
     /// extension.set_children(children);
     /// assert!(extension.children().contains_key("ext:child"));
     /// ```
-    pub fn children(&self) -> &HashMap<String, Vec<Extension>> {
+    pub fn children(&self) -> &BTreeMap<String, Vec<Extension>> {
         &self.children
     }
 
@@ -166,15 +166,15 @@ impl Extension {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::BTreeMap;
     /// use atom_syndication::extension::Extension;
     ///
     /// let mut extension = Extension::default();
-    /// extension.set_children(HashMap::new());
+    /// extension.set_children(BTreeMap::new());
     /// ```
     pub fn set_children<V>(&mut self, children: V)
     where
-        V: Into<HashMap<String, Vec<Extension>>>,
+        V: Into<BTreeMap<String, Vec<Extension>>>,
     {
         self.children = children.into();
     }
