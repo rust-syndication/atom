@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::io::{BufRead, Write};
 use std::str::{self, FromStr};
 
@@ -70,7 +70,7 @@ pub struct Feed {
     pub extensions: ExtensionMap,
     /// The namespaces present in the feed tag.
     #[cfg_attr(feature = "builders", builder(setter(each = "namespace")))]
-    pub namespaces: HashMap<String, String>,
+    pub namespaces: BTreeMap<String, String>,
 }
 
 impl Feed {
@@ -570,13 +570,13 @@ impl Feed {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::BTreeMap;
     /// use atom_syndication::Feed;
     /// use atom_syndication::extension::{ExtensionMap, Extension};
     ///
     /// let extension = Extension::default();
     ///
-    /// let mut item_map = HashMap::<String, Vec<Extension>>::new();
+    /// let mut item_map = BTreeMap::<String, Vec<Extension>>::new();
     /// item_map.insert("ext:name".to_string(), vec![extension]);
     ///
     /// let mut extension_map = ExtensionMap::default();
@@ -617,17 +617,17 @@ impl Feed {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::BTreeMap;
     /// use atom_syndication::Feed;
     ///
-    /// let mut namespaces = HashMap::new();
+    /// let mut namespaces = BTreeMap::new();
     /// namespaces.insert("ext".to_string(), "http://example.com".to_string());
     ///
     /// let mut feed = Feed::default();
     /// feed.set_namespaces(namespaces);
     /// assert_eq!(feed.namespaces().get("ext").map(|s| s.as_str()), Some("http://example.com"));
     /// ```
-    pub fn namespaces(&self) -> &HashMap<String, String> {
+    pub fn namespaces(&self) -> &BTreeMap<String, String> {
         &self.namespaces
     }
 
@@ -636,15 +636,15 @@ impl Feed {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::BTreeMap;
     /// use atom_syndication::Feed;
     ///
     /// let mut feed = Feed::default();
-    /// feed.set_namespaces(HashMap::new());
+    /// feed.set_namespaces(BTreeMap::new());
     /// ```
     pub fn set_namespaces<V>(&mut self, namespaces: V)
     where
-        V: Into<HashMap<String, String>>,
+        V: Into<BTreeMap<String, String>>,
     {
         self.namespaces = namespaces.into()
     }
@@ -800,7 +800,7 @@ impl Default for Feed {
             subtitle: None,
             entries: Vec::new(),
             extensions: ExtensionMap::default(),
-            namespaces: HashMap::default(),
+            namespaces: BTreeMap::default(),
         }
     }
 }
