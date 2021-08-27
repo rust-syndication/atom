@@ -42,7 +42,7 @@ use std::io::BufReader;
 use atom_syndication::Feed;
 
 let file = File::open("example.xml").unwrap();
-let feed = Feed::read_from(BufReader::new(reader)).unwrap();
+let feed = Feed::read_from(BufReader::new(file)).unwrap();
 
 let string = "<feed></feed>";
 let feed = string.parse::<Feed>().unwrap();
