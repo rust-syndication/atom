@@ -217,7 +217,13 @@ impl ToXml for Content {
         writer.write_event(Event::Start(element))?;
 
         if let Some(ref value) = self.value {
-            writer.write_event(Event::Text(BytesText::from_escaped(value.as_bytes())))?;
+            writer.write_event(Event::Text(
+                if self.content_type.as_deref() == Some("xhtml") {
+                    BytesText::from_escaped(value.as_bytes())
+                } else {
+                    BytesText::from_plain(value.as_bytes())
+                },
+            ))?;
         }
 
         writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
