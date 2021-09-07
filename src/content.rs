@@ -9,7 +9,7 @@ use quick_xml::Writer;
 use crate::error::Error;
 use crate::fromxml::FromXml;
 use crate::toxml::ToXml;
-use crate::util::atom_any_text;
+use crate::util::{atom_text, atom_xhtml};
 
 /// Represents the content of an Atom entry
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -183,7 +183,10 @@ impl FromXml for Content {
             }
         }
 
-        content.value = atom_any_text(reader, atts)?;
+        content.value = match content.content_type {
+            Some(ref t) if t == "xhtml" => atom_xhtml(reader)?,
+            _ => atom_text(reader)?,
+        };
 
         Ok(content)
     }
@@ -237,5 +240,100 @@ impl ContentBuilder {
     /// Builds a new `Content`.
     pub fn build(&self) -> Content {
         self.build_impl().unwrap()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::error::Error;
+
+    fn lines(text: &str) -> Vec<&str> {
+        text.lines()
+            .map(|line| line.trim())
+            .filter(|line| !line.is_empty())
+            .collect::<Vec<_>>()
+    }
+
+    fn to_xml(content: &Content) -> String {
+        let mut buffer = Vec::new();
+        let mut writer = Writer::new_with_indent(&mut buffer, b' ', 4);
+        content.to_xml(&mut writer).unwrap();
+        String::from_utf8(buffer).unwrap()
+    }
+
+    fn from_xml(xml: &str) -> Result<Content, Error> {
+        let mut reader = Reader::from_reader(xml.as_bytes());
+        reader.expand_empty_elements(true);
+
+        loop {
+            let mut buf = Vec::new();
+            match reader.read_event(&mut buf)? {
+                Event::Start(element) => {
+                    if element.name() == b"content" {
+                        let content = Content::from_xml(&mut reader, element.attributes())?;
+                        return Ok(content);
+                    } else {
+                        return Err(Error::InvalidStartTag);
+                    }
+                }
+                Event::Eof => return Err(Error::Eof),
+                _ => {}
+            }
+        }
+    }
+
+    #[test]
+    fn test_plain_text() {
+        let content = Content {
+            value: Some("Text with ampersand & <tag>.".into()),
+            ..Default::default()
+        };
+        let xml_fragment = r#"<content>Text with ampersand &amp; &lt;tag&gt;.</content>"#;
+        assert_eq!(to_xml(&content), xml_fragment);
+        assert_eq!(from_xml(xml_fragment).unwrap(), content);
+    }
+
+    #[test]
+    fn test_html() {
+        let content = Content {
+            content_type: Some("html".into()),
+            value: Some("Markup with ampersand, <tag>, & </closing-tag>.".into()),
+            ..Default::default()
+        };
+        let xml_fragment = r#"<content type="html">Markup with ampersand, &lt;tag&gt;, &amp; &lt;/closing-tag&gt;.</content>"#;
+        assert_eq!(to_xml(&content), xml_fragment);
+        assert_eq!(from_xml(xml_fragment).unwrap(), content);
+    }
+
+    #[test]
+    fn test_xhtml() {
+        let content = Content {
+            content_type: Some("xhtml".into()),
+            value: Some(r#"<div>a line<br/>&amp; one more</div>"#.into()),
+            ..Default::default()
+        };
+        let xml_fragment =
+            r#"<content type="xhtml"><div>a line<br/>&amp; one more</div></content>"#;
+        assert_eq!(to_xml(&content), xml_fragment);
+        assert_eq!(from_xml(xml_fragment).unwrap(), content);
+    }
+
+    #[test]
+    fn test_write_image() {
+        let content = Content {
+            content_type: Some("image/png".into()),
+            src: Some("http://example.com/image.png".into()),
+            ..Default::default()
+        };
+        assert_eq!(
+            lines(&to_xml(&content)),
+            lines(
+                r#"
+                    <content type="image/png" src="http://example.com/image.png">
+                    </content>
+                "#
+            )
+        );
     }
 }
