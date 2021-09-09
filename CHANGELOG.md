@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Escape Content's value unless it contains xhtml [`#52`](https://github.com/rust-syndication/atom/pull/52)
+- Preserve entities and open tags (e.g `&amp;`, `<br/>`) in xhtml content [`#53`](https://github.com/rust-syndication/atom/pull/53)
+
 ## 0.10.0 - 2021-06-06
 
 - Infallible builders [`13af228`](https://github.com/rust-syndication/atom/commit/13af228967934f6869886a42bd6427cd6d24da64)
