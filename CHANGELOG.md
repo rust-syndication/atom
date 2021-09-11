@@ -4,6 +4,7 @@
 
 - Escape Content's value unless it contains xhtml [`#52`](https://github.com/rust-syndication/atom/pull/52)
 - Preserve entities and open tags (e.g `&amp;`, `<br/>`) in xhtml content [`#53`](https://github.com/rust-syndication/atom/pull/53)
+- Add support of xml:base and xml:land in a Feed [`#55`](https://github.com/rust-syndication/atom/pull/55)
 
 ## 0.10.0 - 2021-06-06
 

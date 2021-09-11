@@ -71,6 +71,10 @@ pub struct Feed {
     /// The namespaces present in the feed tag.
     #[cfg_attr(feature = "builders", builder(setter(each = "namespace")))]
     pub namespaces: BTreeMap<String, String>,
+    /// Base URL for resolving any relative references found in the element.
+    pub base: Option<String>,
+    /// Indicates the natural language for the element.
+    pub lang: Option<String>,
 }
 
 impl Feed {
@@ -96,19 +100,7 @@ impl Feed {
             match reader.read_event(&mut buf)? {
                 Event::Start(element) => {
                     if element.name() == b"feed" {
-                        let mut feed = Feed::from_xml(&mut reader, element.attributes())?;
-
-                        for attr in element.attributes().with_checks(false).flatten() {
-                            if !attr.key.starts_with(b"xmlns:") || attr.key == b"xmlns:dc" {
-                                continue;
-                            }
-
-                            let key = str::from_utf8(&attr.key[6..])?.to_string();
-                            let value = attr.unescape_and_decode_value(&reader)?;
-                            feed.namespaces.insert(key, value);
-                        }
-
-                        return Ok(feed);
+                        return Feed::from_xml(&mut reader, element.attributes());
                     } else {
                         return Err(Error::InvalidStartTag);
                     }
@@ -648,12 +640,55 @@ impl Feed {
     {
         self.namespaces = namespaces.into()
     }
+
+    /// Return base URL of the feed.
+    pub fn base(&self) -> Option<&str> {
+        self.base.as_deref()
+    }
+
+    /// Set base URL of the feed.
+    pub fn set_base<V>(&mut self, base: V)
+    where
+        V: Into<Option<String>>,
+    {
+        self.base = base.into();
+    }
+
+    /// Return natural language of the feed.
+    pub fn lang(&self) -> Option<&str> {
+        self.lang.as_deref()
+    }
+
+    /// Set the base URL of the feed.
+    pub fn set_lang<V>(&mut self, lang: V)
+    where
+        V: Into<Option<String>>,
+    {
+        self.lang = lang.into();
+    }
 }
 
 impl FromXml for Feed {
-    fn from_xml<B: BufRead>(reader: &mut Reader<B>, _: Attributes<'_>) -> Result<Self, Error> {
+    fn from_xml<B: BufRead>(
+        reader: &mut Reader<B>,
+        mut atts: Attributes<'_>,
+    ) -> Result<Self, Error> {
         let mut feed = Feed::default();
         let mut buf = Vec::new();
+
+        for attr in atts.with_checks(false).flatten() {
+            match attr.key {
+                b"xml:base" => feed.base = Some(attr.unescape_and_decode_value(reader)?),
+                b"xml:lang" => feed.lang = Some(attr.unescape_and_decode_value(reader)?),
+                b"xmlns:dc" => {}
+                attr_key if attr_key.starts_with(b"xmlns:") => {
+                    let ns = str::from_utf8(&attr_key[6..])?.to_string();
+                    let ns_url = attr.unescape_and_decode_value(reader)?;
+                    feed.namespaces.insert(ns, ns_url);
+                }
+                _ => {}
+            }
+        }
 
         loop {
             match reader.read_event(&mut buf)? {
@@ -721,6 +756,14 @@ impl ToXml for Feed {
 
         for (ns, uri) in &self.namespaces {
             element.push_attribute((format!("xmlns:{}", ns).as_bytes(), uri.as_bytes()));
+        }
+
+        if let Some(ref base) = self.base {
+            element.push_attribute(("xml:base", base.as_str()));
+        }
+
+        if let Some(ref lang) = self.lang {
+            element.push_attribute(("xml:lang", lang.as_str()));
         }
 
         writer.write_event(Event::Start(element))?;
@@ -801,6 +844,8 @@ impl Default for Feed {
             entries: Vec::new(),
             extensions: ExtensionMap::default(),
             namespaces: BTreeMap::default(),
+            base: None,
+            lang: None,
         }
     }
 }
@@ -810,5 +855,36 @@ impl FeedBuilder {
     /// Builds a new `Feed`.
     pub fn build(&self) -> Feed {
         self.build_impl().unwrap()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_default() {
+        let feed = Feed::default();
+        let xml_fragment = r#"<?xml version="1.0"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title></title><id></id><updated>1970-01-01T00:00:00+00:00</updated></feed>"#;
+        assert_eq!(feed.to_string(), xml_fragment);
+        let loaded_feed = Feed::read_from(xml_fragment.as_bytes()).unwrap();
+        assert_eq!(loaded_feed, feed);
+        assert_eq!(loaded_feed.base(), None);
+        assert_eq!(loaded_feed.lang(), None);
+    }
+
+    #[test]
+    fn test_base_and_lang() {
+        let mut feed = Feed::default();
+        feed.set_base(Some("http://example.com/blog/".into()));
+        feed.set_lang(Some("fr_FR".into()));
+        let xml_fragment = r#"<?xml version="1.0"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:base="http://example.com/blog/" xml:lang="fr_FR"><title></title><id></id><updated>1970-01-01T00:00:00+00:00</updated></feed>"#;
+        assert_eq!(feed.to_string(), xml_fragment);
+        let loaded_feed = Feed::read_from(xml_fragment.as_bytes()).unwrap();
+        assert_eq!(loaded_feed, feed);
+        assert_eq!(loaded_feed.base(), Some("http://example.com/blog/"));
+        assert_eq!(loaded_feed.lang(), Some("fr_FR"));
     }
 }
