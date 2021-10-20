@@ -2,6 +2,7 @@
 
 ## 0.11.0 - Unreleased
 
+- Disable clock feature of chrono to mitigate RUSTSEC-2020-0159 [`#57`](https://github.com/rust-syndication/atom/pull/57)
 - Escape Content's value unless it contains xhtml [`#52`](https://github.com/rust-syndication/atom/pull/52)
 - Preserve entities and open tags (e.g `&amp;`, `<br/>`) in xhtml content [`#53`](https://github.com/rust-syndication/atom/pull/53)
 - Add support of xml:base and xml:land in a Feed [`#55`](https://github.com/rust-syndication/atom/pull/55)
