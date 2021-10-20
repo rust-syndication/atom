@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.11.0 - Unreleased
+## 0.12.0 - Unreleased
+
+## 0.11.0 - 2021-10-20
 
 - Disable clock feature of chrono to mitigate RUSTSEC-2020-0159 [`#57`](https://github.com/rust-syndication/atom/pull/57)
 - Escape Content's value unless it contains xhtml [`#52`](https://github.com/rust-syndication/atom/pull/52)
