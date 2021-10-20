@@ -16,14 +16,14 @@ Add the dependency to your `Cargo.toml`.
 
 ```toml
 [dependencies]
-atom_syndication = "0.10"
+atom_syndication = "0.11"
 ```
 
 Or, if you want [Serde](https://github.com/serde-rs/serde) include the feature like this:
 
 ```toml
 [dependencies]
-atom_syndication = { version = "0.10", features = ["with-serde"] }
+atom_syndication = { version = "0.11", features = ["with-serde"] }
 ```
 
 The package includes a single crate named `atom_syndication`.
