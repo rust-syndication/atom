@@ -212,7 +212,7 @@ impl FromXml for Content {
 }
 
 impl ToXml for Content {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"content";
         let mut element = BytesStart::borrowed(name, name.len());
 
@@ -236,7 +236,7 @@ impl ToXml for Content {
             element.push_attribute(("src", &**src));
         }
 
-        writer.write_event(Event::Start(element))?;
+        writer.write_event(Event::Start(element)).map_err(XmlError::new)?;
 
         if let Some(ref value) = self.value {
             writer.write_event(Event::Text(
@@ -245,10 +245,10 @@ impl ToXml for Content {
                 } else {
                     BytesText::from_plain(value.as_bytes())
                 },
-            ))?;
+            )).map_err(XmlError::new)?;
         }
 
-        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+        writer.write_event(Event::End(BytesEnd::borrowed(name))).map_err(XmlError::new)?;
 
         Ok(())
     }

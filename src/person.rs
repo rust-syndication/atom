@@ -157,13 +157,13 @@ impl FromXml for Person {
 }
 
 impl ToXmlNamed for Person {
-    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), quick_xml::Error>
+    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), XmlError>
     where
         W: Write,
         N: AsRef<[u8]>,
     {
         let name = name.as_ref();
-        writer.write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_event(Event::Start(BytesStart::borrowed(name, name.len()))).map_err(XmlError::new)?;
         writer.write_text_element(b"name", &*self.name)?;
 
         if let Some(ref email) = self.email {
@@ -174,7 +174,7 @@ impl ToXmlNamed for Person {
             writer.write_text_element(b"uri", &*uri)?;
         }
 
-        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+        writer.write_event(Event::End(BytesEnd::borrowed(name))).map_err(XmlError::new)?;
 
         Ok(())
     }

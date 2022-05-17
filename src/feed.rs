@@ -137,7 +137,7 @@ impl Feed {
         writer
             .write_event(Event::Text(BytesText::from_escaped("\n".as_bytes())))
             .map_err(XmlError::new)?;
-        self.to_xml(&mut writer).map_err(XmlError::new)?;
+        self.to_xml(&mut writer)?;
         Ok(writer.into_inner())
     }
 
@@ -767,7 +767,7 @@ impl FromXml for Feed {
 }
 
 impl ToXml for Feed {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(),XmlError> {
         let name = b"feed";
         let mut element = BytesStart::borrowed(name, name.len());
         element.push_attribute(("xmlns", "http://www.w3.org/2005/Atom"));
@@ -784,7 +784,7 @@ impl ToXml for Feed {
             element.push_attribute(("xml:lang", lang.as_str()));
         }
 
-        writer.write_event(Event::Start(element))?;
+        writer.write_event(Event::Start(element)).map_err(XmlError::new)?;
         writer.write_object_named(&self.title, b"title")?;
         writer.write_text_element(b"id", &*self.id)?;
         writer.write_text_element(b"updated", &*self.updated.to_rfc3339())?;
@@ -822,7 +822,7 @@ impl ToXml for Feed {
             }
         }
 
-        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+        writer.write_event(Event::End(BytesEnd::borrowed(name))).map_err(XmlError::new)?;
 
         Ok(())
     }
