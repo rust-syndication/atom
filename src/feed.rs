@@ -4,13 +4,13 @@ use std::str::{self, FromStr};
 
 use quick_xml::events::attributes::Attributes;
 use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event};
-use quick_xml::Error as XmlError;
+// use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
 use crate::category::Category;
 use crate::entry::Entry;
-use crate::error::Error;
+use crate::error::{Error, XmlError};
 use crate::extension::util::{extension_name, parse_extension};
 use crate::extension::ExtensionMap;
 use crate::fromxml::FromXml;
@@ -97,7 +97,7 @@ impl Feed {
         let mut buf = Vec::new();
 
         loop {
-            match reader.read_event(&mut buf)? {
+            match reader.read_event(&mut buf).map_err(XmlError::new)? {
                 Event::Start(element) => {
                     if element.name() == b"feed" {
                         return Feed::from_xml(&mut reader, element.attributes());
@@ -131,9 +131,13 @@ impl Feed {
     /// ```
     pub fn write_to<W: Write>(&self, writer: W) -> Result<W, Error> {
         let mut writer = Writer::new(writer);
-        writer.write_event(Event::Decl(BytesDecl::new(b"1.0", None, None)))?;
-        writer.write_event(Event::Text(BytesText::from_escaped("\n".as_bytes())))?;
-        self.to_xml(&mut writer)?;
+        writer
+            .write_event(Event::Decl(BytesDecl::new(b"1.0", None, None)))
+            .map_err(XmlError::new)?;
+        writer
+            .write_event(Event::Text(BytesText::from_escaped("\n".as_bytes())))
+            .map_err(XmlError::new)?;
+        self.to_xml(&mut writer).map_err(XmlError::new)?;
         Ok(writer.into_inner())
     }
 
@@ -678,12 +682,24 @@ impl FromXml for Feed {
 
         for attr in atts.with_checks(false).flatten() {
             match attr.key {
-                b"xml:base" => feed.base = Some(attr.unescape_and_decode_value(reader)?),
-                b"xml:lang" => feed.lang = Some(attr.unescape_and_decode_value(reader)?),
+                b"xml:base" => {
+                    feed.base = Some(
+                        attr.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
+                b"xml:lang" => {
+                    feed.lang = Some(
+                        attr.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
                 b"xmlns:dc" => {}
                 attr_key if attr_key.starts_with(b"xmlns:") => {
                     let ns = str::from_utf8(&attr_key[6..])?.to_string();
-                    let ns_url = attr.unescape_and_decode_value(reader)?;
+                    let ns_url = attr
+                        .unescape_and_decode_value(reader)
+                        .map_err(XmlError::new)?;
                     feed.namespaces.insert(ns, ns_url);
                 }
                 _ => {}
@@ -691,7 +707,7 @@ impl FromXml for Feed {
         }
 
         loop {
-            match reader.read_event(&mut buf)? {
+            match reader.read_event(&mut buf).map_err(XmlError::new)? {
                 Event::Start(element) => match element.name() {
                     b"title" => feed.title = Text::from_xml(reader, element.attributes())?,
                     b"id" => feed.id = atom_text(reader)?.unwrap_or_default(),
@@ -732,7 +748,9 @@ impl FromXml for Feed {
                                 &mut feed.extensions,
                             )?;
                         } else {
-                            reader.read_to_end(n, &mut Vec::new())?;
+                            reader
+                                .read_to_end(n, &mut Vec::new())
+                                .map_err(XmlError::new)?;
                         }
                     }
                 },
@@ -749,7 +767,7 @@ impl FromXml for Feed {
 }
 
 impl ToXml for Feed {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
         let name = b"feed";
         let mut element = BytesStart::borrowed(name, name.len());
         element.push_attribute(("xmlns", "http://www.w3.org/2005/Atom"));

@@ -2,11 +2,10 @@ use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
-use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
-use crate::error::Error;
+use crate::error::{Error, XmlError};
 use crate::fromxml::FromXml;
 use crate::toxml::ToXml;
 use crate::util::atom_text;
@@ -140,8 +139,18 @@ impl FromXml for Generator {
 
         for att in atts.with_checks(false).flatten() {
             match att.key {
-                b"uri" => generator.uri = Some(att.unescape_and_decode_value(reader)?),
-                b"version" => generator.version = Some(att.unescape_and_decode_value(reader)?),
+                b"uri" => {
+                    generator.uri = Some(
+                        att.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
+                b"version" => {
+                    generator.version = Some(
+                        att.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
                 _ => {}
             }
         }
@@ -153,7 +162,7 @@ impl FromXml for Generator {
 }
 
 impl ToXml for Generator {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
         let name = b"generator";
         let mut element = BytesStart::borrowed(name, name.len());
 

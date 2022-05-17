@@ -2,11 +2,10 @@ use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
 use quick_xml::events::{BytesStart, Event};
-use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
-use crate::error::Error;
+use crate::error::{Error, XmlError};
 use crate::fromxml::FromXml;
 use crate::toxml::ToXml;
 
@@ -139,21 +138,37 @@ impl FromXml for Category {
 
         for att in atts.with_checks(false).flatten() {
             match att.key {
-                b"term" => category.term = att.unescape_and_decode_value(reader)?,
-                b"scheme" => category.scheme = Some(att.unescape_and_decode_value(reader)?),
-                b"label" => category.label = Some(att.unescape_and_decode_value(reader)?),
+                b"term" => {
+                    category.term = att
+                        .unescape_and_decode_value(reader)
+                        .map_err(XmlError::new)?
+                }
+                b"scheme" => {
+                    category.scheme = Some(
+                        att.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
+                b"label" => {
+                    category.label = Some(
+                        att.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
                 _ => {}
             }
         }
 
-        reader.read_to_end(b"category", &mut Vec::new())?;
+        reader
+            .read_to_end(b"category", &mut Vec::new())
+            .map_err(XmlError::new)?;
 
         Ok(category)
     }
 }
 
 impl ToXml for Category {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
         let name = b"category";
         let mut element = BytesStart::borrowed(name, name.len());
         element.push_attribute(("term", &*self.term));

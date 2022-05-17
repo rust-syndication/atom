@@ -6,11 +6,10 @@ use std::str::FromStr;
 
 use quick_xml::events::attributes::Attributes;
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
-use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
-use crate::error::Error;
+use crate::error::{Error, XmlError};
 use crate::fromxml::FromXml;
 use crate::toxml::ToXmlNamed;
 use crate::util::{atom_text, atom_xhtml};
@@ -164,9 +163,24 @@ impl FromXml for Text {
 
         for att in atts.with_checks(false).flatten() {
             match att.key {
-                b"xml:base" => text.base = Some(att.unescape_and_decode_value(reader)?),
-                b"xml:lang" => text.lang = Some(att.unescape_and_decode_value(reader)?),
-                b"type" => text.r#type = att.unescape_and_decode_value(reader)?.parse()?,
+                b"xml:base" => {
+                    text.base = Some(
+                        att.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
+                b"xml:lang" => {
+                    text.lang = Some(
+                        att.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
+                b"type" => {
+                    text.r#type = att
+                        .unescape_and_decode_value(reader)
+                        .map_err(XmlError::new)?
+                        .parse()?
+                }
                 _ => {}
             }
         }
@@ -184,7 +198,7 @@ impl FromXml for Text {
 }
 
 impl ToXmlNamed for Text {
-    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), XmlError>
+    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), quick_xml::Error>
     where
         W: Write,
         N: AsRef<[u8]>,

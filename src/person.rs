@@ -2,11 +2,10 @@ use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
-use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
-use crate::error::Error;
+use crate::error::{Error, XmlError};
 use crate::fromxml::FromXml;
 use crate::toxml::{ToXmlNamed, WriterExt};
 use crate::util::atom_text;
@@ -136,12 +135,14 @@ impl FromXml for Person {
         let mut buf = Vec::new();
 
         loop {
-            match reader.read_event(&mut buf)? {
+            match reader.read_event(&mut buf).map_err(XmlError::new)? {
                 Event::Start(element) => match element.name() {
                     b"name" => person.name = atom_text(reader)?.unwrap_or_default(),
                     b"email" => person.email = atom_text(reader)?,
                     b"uri" => person.uri = atom_text(reader)?,
-                    n => reader.read_to_end(n, &mut Vec::new())?,
+                    n => reader
+                        .read_to_end(n, &mut Vec::new())
+                        .map_err(XmlError::new)?,
                 },
                 Event::End(_) => break,
                 Event::Eof => return Err(Error::Eof),
@@ -156,7 +157,7 @@ impl FromXml for Person {
 }
 
 impl ToXmlNamed for Person {
-    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), XmlError>
+    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), quick_xml::Error>
     where
         W: Write,
         N: AsRef<[u8]>,

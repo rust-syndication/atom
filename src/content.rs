@@ -2,11 +2,10 @@ use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
-use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
-use crate::error::Error;
+use crate::error::{Error, XmlError};
 use crate::fromxml::FromXml;
 use crate::toxml::ToXml;
 use crate::util::{atom_text, atom_xhtml};
@@ -175,10 +174,30 @@ impl FromXml for Content {
 
         for att in atts.with_checks(false).flatten() {
             match att.key {
-                b"xml:base" => content.base = Some(att.unescape_and_decode_value(reader)?),
-                b"xml:lang" => content.lang = Some(att.unescape_and_decode_value(reader)?),
-                b"type" => content.content_type = Some(att.unescape_and_decode_value(reader)?),
-                b"src" => content.src = Some(att.unescape_and_decode_value(reader)?),
+                b"xml:base" => {
+                    content.base = Some(
+                        att.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
+                b"xml:lang" => {
+                    content.lang = Some(
+                        att.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
+                b"type" => {
+                    content.content_type = Some(
+                        att.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
+                b"src" => {
+                    content.src = Some(
+                        att.unescape_and_decode_value(reader)
+                            .map_err(XmlError::new)?,
+                    )
+                }
                 _ => {}
             }
         }
@@ -193,7 +212,7 @@ impl FromXml for Content {
 }
 
 impl ToXml for Content {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
         let name = b"content";
         let mut element = BytesStart::borrowed(name, name.len());
 
@@ -268,7 +287,7 @@ mod test {
 
         loop {
             let mut buf = Vec::new();
-            match reader.read_event(&mut buf)? {
+            match reader.read_event(&mut buf).map_err(XmlError::new)? {
                 Event::Start(element) => {
                     if element.name() == b"content" {
                         let content = Content::from_xml(&mut reader, element.attributes())?;
