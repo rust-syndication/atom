@@ -236,19 +236,25 @@ impl ToXml for Content {
             element.push_attribute(("src", &**src));
         }
 
-        writer.write_event(Event::Start(element)).map_err(XmlError::new)?;
+        writer
+            .write_event(Event::Start(element))
+            .map_err(XmlError::new)?;
 
         if let Some(ref value) = self.value {
-            writer.write_event(Event::Text(
-                if self.content_type.as_deref() == Some("xhtml") {
-                    BytesText::from_escaped(value.as_bytes())
-                } else {
-                    BytesText::from_plain(value.as_bytes())
-                },
-            )).map_err(XmlError::new)?;
+            writer
+                .write_event(Event::Text(
+                    if self.content_type.as_deref() == Some("xhtml") {
+                        BytesText::from_escaped(value.as_bytes())
+                    } else {
+                        BytesText::from_plain(value.as_bytes())
+                    },
+                ))
+                .map_err(XmlError::new)?;
         }
 
-        writer.write_event(Event::End(BytesEnd::borrowed(name))).map_err(XmlError::new)?;
+        writer
+            .write_event(Event::End(BytesEnd::borrowed(name)))
+            .map_err(XmlError::new)?;
 
         Ok(())
     }

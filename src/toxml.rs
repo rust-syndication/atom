@@ -72,9 +72,12 @@ impl<W: Write> WriterExt for Writer<W> {
         T: AsRef<[u8]>,
     {
         let name = name.as_ref();
-        self.write_event(Event::Start(BytesStart::borrowed(name, name.len()))).map_err(XmlError::new)?;
-        self.write_event(Event::Text(BytesText::from_escaped(text.as_ref()))).map_err(XmlError::new)?;
-        self.write_event(Event::End(BytesEnd::borrowed(name))).map_err(XmlError::new)?;
+        self.write_event(Event::Start(BytesStart::borrowed(name, name.len())))
+            .map_err(XmlError::new)?;
+        self.write_event(Event::Text(BytesText::from_escaped(text.as_ref())))
+            .map_err(XmlError::new)?;
+        self.write_event(Event::End(BytesEnd::borrowed(name)))
+            .map_err(XmlError::new)?;
         Ok(())
     }
 

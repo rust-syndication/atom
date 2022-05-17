@@ -181,7 +181,9 @@ impl ToXml for Category {
             element.push_attribute(("label", &**label));
         }
 
-        writer.write_event(Event::Empty(element)).map_err(XmlError::new)?;
+        writer
+            .write_event(Event::Empty(element))
+            .map_err(XmlError::new)?;
 
         Ok(())
     }

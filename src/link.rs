@@ -296,7 +296,9 @@ impl ToXml for Link {
             element.push_attribute(("length", &**length));
         }
 
-        writer.write_event(Event::Empty(element)).map_err(XmlError::new)?;
+        writer
+            .write_event(Event::Empty(element))
+            .map_err(XmlError::new)?;
 
         Ok(())
     }
