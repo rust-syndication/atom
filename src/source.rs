@@ -2,12 +2,11 @@ use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
-use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
 use crate::category::Category;
-use crate::error::Error;
+use crate::error::{Error, XmlError};
 use crate::fromxml::FromXml;
 use crate::generator::Generator;
 use crate::link::Link;
@@ -455,7 +454,7 @@ impl FromXml for Source {
         let mut buf = Vec::new();
 
         loop {
-            match reader.read_event(&mut buf)? {
+            match reader.read_event(&mut buf).map_err(XmlError::new)? {
                 Event::Start(element) => match element.name() {
                     b"id" => source.id = atom_text(reader)?.unwrap_or_default(),
                     b"title" => source.title = Text::from_xml(reader, element.attributes())?,
@@ -486,7 +485,9 @@ impl FromXml for Source {
                     b"subtitle" => {
                         source.subtitle = Some(Text::from_xml(reader, element.attributes())?)
                     }
-                    n => reader.read_to_end(n, &mut Vec::new())?,
+                    n => reader
+                        .read_to_end(n, &mut Vec::new())
+                        .map_err(XmlError::new)?,
                 },
                 Event::End(_) => break,
                 Event::Eof => return Err(Error::Eof),
@@ -501,7 +502,7 @@ impl FromXml for Source {
 }
 
 impl ToXml for Source {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
         let name = b"source";
         writer.write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
         writer.write_object_named(&self.title, b"title")?;

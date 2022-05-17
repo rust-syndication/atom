@@ -3,7 +3,7 @@ use std::io::BufRead;
 use quick_xml::events::Event;
 use quick_xml::Reader;
 
-use crate::error::Error;
+use crate::error::{Error, XmlError};
 use std::str::FromStr;
 
 /// Alias of `::chrono::DateTime<::chrono::FixedOffset>`
@@ -29,11 +29,11 @@ pub fn atom_text<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, E
     let mut result = String::new();
 
     loop {
-        match reader.read_event(&mut innerbuf)? {
+        match reader.read_event(&mut innerbuf).map_err(XmlError::new)? {
             Event::Start(start) => {
                 depth += 1;
                 result.push('<');
-                result.push_str(&start.unescape_and_decode(reader)?);
+                result.push_str(&start.unescape_and_decode(reader).map_err(XmlError::new)?);
                 result.push('>');
             }
             Event::End(end) => {
@@ -47,19 +47,19 @@ pub fn atom_text<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, E
             }
             Event::Empty(start) => {
                 result.push('<');
-                result.push_str(&start.unescape_and_decode(reader)?);
+                result.push_str(&start.unescape_and_decode(reader).map_err(XmlError::new)?);
                 result.push_str("/>");
             }
             Event::CData(text) => {
-                let decoded = text.unescape_and_decode(reader)?;
+                let decoded = text.unescape_and_decode(reader).map_err(XmlError::new)?;
                 result.push_str(&decoded);
             }
             Event::Text(text) => {
-                let decoded = text.unescape_and_decode(reader)?;
+                let decoded = text.unescape_and_decode(reader).map_err(XmlError::new)?;
                 result.push_str(&decoded);
             }
             Event::Comment(text) => {
-                let decoded = text.unescape_and_decode(reader)?;
+                let decoded = text.unescape_and_decode(reader).map_err(XmlError::new)?;
                 result.push_str("<!--");
                 result.push_str(&decoded);
                 result.push_str("-->");
@@ -86,11 +86,11 @@ pub fn atom_xhtml<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, 
     let mut result = String::new();
 
     loop {
-        match reader.read_event(&mut innerbuf)? {
+        match reader.read_event(&mut innerbuf).map_err(XmlError::new)? {
             Event::Start(start) => {
                 depth += 1;
                 result.push('<');
-                result.push_str(&start.unescape_and_decode(reader)?);
+                result.push_str(&start.unescape_and_decode(reader).map_err(XmlError::new)?);
                 result.push('>');
             }
             Event::End(end) => {
@@ -104,7 +104,7 @@ pub fn atom_xhtml<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, 
             }
             Event::Empty(start) => {
                 result.push('<');
-                result.push_str(&start.unescape_and_decode(reader)?);
+                result.push_str(&start.unescape_and_decode(reader).map_err(XmlError::new)?);
                 result.push_str("/>");
             }
             Event::CData(text) => {
@@ -116,7 +116,7 @@ pub fn atom_xhtml<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, 
                 result.push_str(&decoded);
             }
             Event::Comment(text) => {
-                let decoded = text.unescape_and_decode(reader)?;
+                let decoded = text.unescape_and_decode(reader).map_err(XmlError::new)?;
                 result.push_str("<!--");
                 result.push_str(&decoded);
                 result.push_str("-->");
@@ -156,7 +156,7 @@ mod test {
         reader.expand_empty_elements(true);
         loop {
             let mut buf = Vec::new();
-            match reader.read_event(&mut buf)? {
+            match reader.read_event(&mut buf).map_err(XmlError::new)? {
                 Event::Start(element) if element.name() == b"text" => {
                     return atom_text(&mut reader)
                 }

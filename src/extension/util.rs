@@ -6,7 +6,7 @@ use quick_xml::events::attributes::Attributes;
 use quick_xml::events::Event;
 use quick_xml::Reader;
 
-use crate::error::Error;
+use crate::error::{Error, XmlError};
 use crate::extension::{Extension, ExtensionMap};
 
 pub fn extension_name(element_name: &[u8]) -> Option<(&[u8], &[u8])> {
@@ -63,12 +63,14 @@ fn parse_extension_element<R: BufRead>(
 
     for attr in atts.with_checks(false).flatten() {
         let key = str::from_utf8(attr.key)?;
-        let value = attr.unescape_and_decode_value(reader)?;
+        let value = attr
+            .unescape_and_decode_value(reader)
+            .map_err(XmlError::new)?;
         extension.attrs.insert(key.to_string(), value);
     }
 
     loop {
-        match reader.read_event(&mut buf)? {
+        match reader.read_event(&mut buf).map_err(XmlError::new)? {
             Event::Start(element) => {
                 let ext = parse_extension_element(reader, element.attributes())?;
                 let name = str::from_utf8(element.local_name())?;
@@ -88,7 +90,13 @@ fn parse_extension_element<R: BufRead>(
                 extension.value = Some(reader.decode(&element).into());
             }
             Event::Text(element) => {
-                extension.value = Some(element.unescape_and_decode(reader)?.trim().to_string());
+                extension.value = Some(
+                    element
+                        .unescape_and_decode(reader)
+                        .map_err(XmlError::new)?
+                        .trim()
+                        .to_string(),
+                );
             }
             Event::End(element) => {
                 extension.name = reader.decode(element.name()).into();

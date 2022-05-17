@@ -2,13 +2,12 @@ use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
 use quick_xml::events::{BytesEnd, BytesStart, Event};
-use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
 use crate::category::Category;
 use crate::content::Content;
-use crate::error::Error;
+use crate::error::{Error, XmlError};
 use crate::extension::util::{extension_name, parse_extension};
 use crate::extension::ExtensionMap;
 use crate::fromxml::FromXml;
@@ -513,7 +512,7 @@ impl FromXml for Entry {
         let mut buf = Vec::new();
 
         loop {
-            match reader.read_event(&mut buf)? {
+            match reader.read_event(&mut buf).map_err(XmlError::new)? {
                 Event::Start(element) => match element.name() {
                     b"id" => entry.id = atom_text(reader)?.unwrap_or_default(),
                     b"title" => entry.title = Text::from_xml(reader, element.attributes())?,
@@ -554,7 +553,9 @@ impl FromXml for Entry {
                                 &mut entry.extensions,
                             )?;
                         } else {
-                            reader.read_to_end(n, &mut Vec::new())?;
+                            reader
+                                .read_to_end(n, &mut Vec::new())
+                                .map_err(XmlError::new)?;
                         }
                     }
                 },
@@ -571,7 +572,7 @@ impl FromXml for Entry {
 }
 
 impl ToXml for Entry {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
         let name = b"entry";
         writer.write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
         writer.write_object_named(&self.title, b"title")?;

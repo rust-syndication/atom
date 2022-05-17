@@ -2,11 +2,10 @@ use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
 use quick_xml::events::{BytesStart, Event};
-use quick_xml::Error as XmlError;
 use quick_xml::Reader;
 use quick_xml::Writer;
 
-use crate::error::Error;
+use crate::error::{Error, XmlError};
 use crate::fromxml::FromXml;
 use crate::toxml::ToXml;
 
@@ -245,32 +244,37 @@ impl Link {
 }
 
 impl FromXml for Link {
-    fn from_xml<B: BufRead>(
-        reader: &mut Reader<B>,
-        mut atts: Attributes<'_>,
-    ) -> Result<Self, Error> {
-        let mut link = Link::default();
+    fn from_xml<B: BufRead>(reader: &mut Reader<B>, atts: Attributes<'_>) -> Result<Self, Error> {
+        fn from_xml_inner<B: BufRead>(
+            reader: &mut Reader<B>,
+            mut atts: Attributes<'_>,
+        ) -> Result<Link, quick_xml::Error> {
+            let mut link = Link::default();
 
-        for att in atts.with_checks(false).flatten() {
-            match att.key {
-                b"href" => link.href = att.unescape_and_decode_value(reader)?,
-                b"rel" => link.rel = att.unescape_and_decode_value(reader)?,
-                b"hreflang" => link.hreflang = Some(att.unescape_and_decode_value(reader)?),
-                b"type" => link.mime_type = Some(att.unescape_and_decode_value(reader)?),
-                b"title" => link.title = Some(att.unescape_and_decode_value(reader)?),
-                b"length" => link.length = Some(att.unescape_and_decode_value(reader)?),
-                _ => {}
+            for att in atts.with_checks(false).flatten() {
+                match att.key {
+                    b"href" => link.href = att.unescape_and_decode_value(reader)?,
+                    b"rel" => link.rel = att.unescape_and_decode_value(reader)?,
+                    b"hreflang" => link.hreflang = Some(att.unescape_and_decode_value(reader)?),
+                    b"type" => link.mime_type = Some(att.unescape_and_decode_value(reader)?),
+                    b"title" => link.title = Some(att.unescape_and_decode_value(reader)?),
+                    b"length" => link.length = Some(att.unescape_and_decode_value(reader)?),
+                    _ => {}
+                }
             }
+
+            reader.read_to_end(b"link", &mut Vec::new())?;
+
+            Ok(link)
         }
-
-        reader.read_to_end(b"link", &mut Vec::new())?;
-
-        Ok(link)
+        from_xml_inner(reader, atts)
+            .map_err(XmlError::new)
+            .map_err(Error::from)
     }
 }
 
 impl ToXml for Link {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
         let name = b"link";
         let mut element = BytesStart::borrowed(name, name.len());
         element.push_attribute(("href", &*self.href));
