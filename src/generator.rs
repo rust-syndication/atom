@@ -174,9 +174,15 @@ impl ToXml for Generator {
             element.push_attribute(("version", &**version));
         }
 
-        writer.write_event(Event::Start(element)).map_err(XmlError::new)?;
-        writer.write_event(Event::Text(BytesText::from_escaped(self.value.as_bytes()))).map_err(XmlError::new)?;
-        writer.write_event(Event::End(BytesEnd::borrowed(name))).map_err(XmlError::new)?;
+        writer
+            .write_event(Event::Start(element))
+            .map_err(XmlError::new)?;
+        writer
+            .write_event(Event::Text(BytesText::from_escaped(self.value.as_bytes())))
+            .map_err(XmlError::new)?;
+        writer
+            .write_event(Event::End(BytesEnd::borrowed(name)))
+            .map_err(XmlError::new)?;
 
         Ok(())
     }

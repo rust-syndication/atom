@@ -214,13 +214,21 @@ impl ToXmlNamed for Text {
         if self.r#type != TextType::default() {
             element.push_attribute(("type", self.r#type.as_str()));
         }
-        writer.write_event(Event::Start(element)).map_err(XmlError::new)?;
+        writer
+            .write_event(Event::Start(element))
+            .map_err(XmlError::new)?;
         if self.r#type == TextType::Xhtml {
-            writer.write_event(Event::Text(BytesText::from_escaped(self.value.as_bytes()))).map_err(XmlError::new)?;
+            writer
+                .write_event(Event::Text(BytesText::from_escaped(self.value.as_bytes())))
+                .map_err(XmlError::new)?;
         } else {
-            writer.write_event(Event::Text(BytesText::from_plain_str(self.value.as_str()))).map_err(XmlError::new)?;
+            writer
+                .write_event(Event::Text(BytesText::from_plain_str(self.value.as_str())))
+                .map_err(XmlError::new)?;
         }
-        writer.write_event(Event::End(BytesEnd::borrowed(name))).map_err(XmlError::new)?;
+        writer
+            .write_event(Event::End(BytesEnd::borrowed(name)))
+            .map_err(XmlError::new)?;
 
         Ok(())
     }

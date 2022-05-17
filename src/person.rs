@@ -163,7 +163,9 @@ impl ToXmlNamed for Person {
         N: AsRef<[u8]>,
     {
         let name = name.as_ref();
-        writer.write_event(Event::Start(BytesStart::borrowed(name, name.len()))).map_err(XmlError::new)?;
+        writer
+            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))
+            .map_err(XmlError::new)?;
         writer.write_text_element(b"name", &*self.name)?;
 
         if let Some(ref email) = self.email {
@@ -174,7 +176,9 @@ impl ToXmlNamed for Person {
             writer.write_text_element(b"uri", &*uri)?;
         }
 
-        writer.write_event(Event::End(BytesEnd::borrowed(name))).map_err(XmlError::new)?;
+        writer
+            .write_event(Event::End(BytesEnd::borrowed(name)))
+            .map_err(XmlError::new)?;
 
         Ok(())
     }
