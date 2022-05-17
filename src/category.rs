@@ -168,7 +168,7 @@ impl FromXml for Category {
 }
 
 impl ToXml for Category {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"category";
         let mut element = BytesStart::borrowed(name, name.len());
         element.push_attribute(("term", &*self.term));
@@ -181,7 +181,7 @@ impl ToXml for Category {
             element.push_attribute(("label", &**label));
         }
 
-        writer.write_event(Event::Empty(element))?;
+        writer.write_event(Event::Empty(element)).map_err(XmlError::new)?;
 
         Ok(())
     }

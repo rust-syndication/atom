@@ -274,7 +274,7 @@ impl FromXml for Link {
 }
 
 impl ToXml for Link {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"link";
         let mut element = BytesStart::borrowed(name, name.len());
         element.push_attribute(("href", &*self.href));
@@ -296,7 +296,7 @@ impl ToXml for Link {
             element.push_attribute(("length", &**length));
         }
 
-        writer.write_event(Event::Empty(element))?;
+        writer.write_event(Event::Empty(element)).map_err(XmlError::new)?;
 
         Ok(())
     }

@@ -198,7 +198,7 @@ impl FromXml for Text {
 }
 
 impl ToXmlNamed for Text {
-    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), quick_xml::Error>
+    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), XmlError>
     where
         W: Write,
         N: AsRef<[u8]>,
@@ -214,13 +214,13 @@ impl ToXmlNamed for Text {
         if self.r#type != TextType::default() {
             element.push_attribute(("type", self.r#type.as_str()));
         }
-        writer.write_event(Event::Start(element))?;
+        writer.write_event(Event::Start(element)).map_err(XmlError::new)?;
         if self.r#type == TextType::Xhtml {
-            writer.write_event(Event::Text(BytesText::from_escaped(self.value.as_bytes())))?;
+            writer.write_event(Event::Text(BytesText::from_escaped(self.value.as_bytes()))).map_err(XmlError::new)?;
         } else {
-            writer.write_event(Event::Text(BytesText::from_plain_str(self.value.as_str())))?;
+            writer.write_event(Event::Text(BytesText::from_plain_str(self.value.as_str()))).map_err(XmlError::new)?;
         }
-        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+        writer.write_event(Event::End(BytesEnd::borrowed(name))).map_err(XmlError::new)?;
 
         Ok(())
     }

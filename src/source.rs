@@ -502,9 +502,9 @@ impl FromXml for Source {
 }
 
 impl ToXml for Source {
-    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), quick_xml::Error> {
+    fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
         let name = b"source";
-        writer.write_event(Event::Start(BytesStart::borrowed(name, name.len())))?;
+        writer.write_event(Event::Start(BytesStart::borrowed(name, name.len()))).map_err(XmlError::new)?;
         writer.write_object_named(&self.title, b"title")?;
         writer.write_text_element(b"id", &*self.id)?;
         writer.write_text_element(b"updated", &self.updated.to_rfc3339())?;
@@ -534,7 +534,7 @@ impl ToXml for Source {
             writer.write_object_named(subtitle, b"subtitle")?;
         }
 
-        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+        writer.write_event(Event::End(BytesEnd::borrowed(name))).map_err(XmlError::new)?;
 
         Ok(())
     }

@@ -3,9 +3,9 @@ use std::io::Write;
 use std::str;
 
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
-use quick_xml::Error as XmlError;
 use quick_xml::Writer;
 
+use crate::error::XmlError;
 use crate::toxml::ToXml;
 
 pub(crate) mod util;
@@ -185,17 +185,17 @@ impl ToXml for Extension {
         let name = self.name.as_bytes();
         let mut element = BytesStart::borrowed(name, name.len());
         element.extend_attributes(self.attrs.iter().map(|a| (a.0.as_bytes(), a.1.as_bytes())));
-        writer.write_event(Event::Start(element))?;
+        writer.write_event(Event::Start(element)).map_err(XmlError::new)?;
 
         if let Some(value) = self.value.as_ref() {
-            writer.write_event(Event::Text(BytesText::from_escaped(value.as_bytes())))?;
+            writer.write_event(Event::Text(BytesText::from_escaped(value.as_bytes()))).map_err(XmlError::new)?;
         }
 
         for extension in self.children.values().flatten() {
             extension.to_xml(writer)?;
         }
 
-        writer.write_event(Event::End(BytesEnd::borrowed(name)))?;
+        writer.write_event(Event::End(BytesEnd::borrowed(name))).map_err(XmlError::new)?;
         Ok(())
     }
 }
