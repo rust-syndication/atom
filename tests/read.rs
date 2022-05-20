@@ -3,6 +3,8 @@ extern crate atom_syndication as atom;
 use std::fs::File;
 use std::io::BufReader;
 
+use atom::Error;
+
 use crate::atom::extension::ExtensionMap;
 use crate::atom::{Feed, Text};
 
@@ -168,4 +170,143 @@ fn read_extension() {
 
     check_extensions(feed.extensions());
     check_extensions(entry.extensions());
+}
+
+#[test]
+fn read_eof() {
+    let result = Feed::read_from("".as_bytes());
+    assert!(matches!(result, Err(Error::Eof)));
+}
+
+#[test]
+fn read_invalid_start() {
+    let result = Feed::read_from("<wrong></wrong>".as_bytes());
+    assert!(matches!(result, Err(Error::InvalidStartTag)));
+}
+
+#[test]
+fn read_invalid_attribute_lang() {
+    let result = Feed::read_from("<feed xml:lang=\"&;\"></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn read_invalid_attribute_base() {
+    let result = Feed::read_from("<feed xml:base=\"&;\"></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn read_invalid_attribute_namespace() {
+    let result = Feed::read_from("<feed xmlns:invalid=\"&;\"></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+
+#[test]
+fn read_mismatched_tags() {
+    let result = Feed::read_from("<feed><a></b></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn read_internal_invalid_tag() {
+    let result = Feed::read_from("<feed><aba><aaa></aba></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn read_entry_internal_invalid_tag() {
+    let result = Feed::read_from("<feed><entry><aaa></entry></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn link_invalid_attribute() {
+    let result = Feed::read_from("<feed><link href=\"&;\"></link></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn text_invalid_xml_base() {
+    let result = Feed::read_from("<feed><rights xml:base=\"&;\"></rights></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn text_invalid_xml_lang() {
+    let result = Feed::read_from("<feed><rights xml:lang=\"&;\"></rights></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn text_invalid_type() {
+    let result = Feed::read_from("<feed><rights type=\"&;\"></rights></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn author_internal_invalid_tag() {
+    let result = Feed::read_from("<feed><author><invalid></author></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn source_internal_invalid_tag() {
+    let result = Feed::read_from("<feed><entry><source><invalid></source></entry></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn content_invalid_xml_lang() {
+    let result = Feed::read_from("<feed><entry><content xml:lang=\"&;\"></content></entry></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn content_invalid_xml_base() {
+    let result = Feed::read_from("<feed><entry><content xml:base=\"&;\"></content></entry></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn content_invalid_type() {
+    let result = Feed::read_from("<feed><entry><content type=\"&;\"></content></entry></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn content_invalid_src() {
+    let result = Feed::read_from("<feed><entry><content src=\"&;\"></content></entry></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn category_invalid_term() {
+    let result = Feed::read_from("<feed><category term=\"&;\"></category></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn category_invalid_scheme() {
+    let result = Feed::read_from("<feed><category scheme=\"&;\"></category></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn category_invalid_label() {
+    let result = Feed::read_from("<feed><category label=\"&;\"></category></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn generator_invalid_uri() {
+    let result = Feed::read_from("<feed><generator uri=\"&;\"></generator></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
+}
+
+#[test]
+fn generator_invalid_version() {
+    let result = Feed::read_from("<feed><generator version=\"&;\"></generator></feed>".as_bytes());
+    assert!(matches!(result, Err(Error::Xml(_))));
 }
