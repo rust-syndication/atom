@@ -28,7 +28,7 @@ pub enum Error {
 impl StdError for Error {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match *self {
-            Error::Xml(XmlError(ref err)) => Some(err),
+            Error::Xml(ref err) => Some(err),
             Error::Utf8(ref err) => Some(err),
             Error::InvalidStartTag => None,
             Error::Eof => None,
@@ -41,7 +41,7 @@ impl StdError for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Error::Xml(XmlError(ref err)) => fmt::Display::fmt(err, f),
+            Error::Xml(ref err) => fmt::Display::fmt(err, f),
             Error::Utf8(ref err) => fmt::Display::fmt(err, f),
             Error::InvalidStartTag => write!(f, "input did not begin with an opening feed tag"),
             Error::Eof => write!(f, "unexpected end of input"),
@@ -80,5 +80,17 @@ pub struct XmlError(quick_xml::Error);
 impl XmlError {
     pub(crate) fn new(err: quick_xml::Error) -> Self {
         Self(err)
+    }
+}
+
+impl StdError for XmlError {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        self.0.source()
+    }
+}
+
+impl fmt::Display for XmlError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(&self.0, f)
     }
 }

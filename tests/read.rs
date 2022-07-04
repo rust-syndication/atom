@@ -202,7 +202,6 @@ fn read_invalid_attribute_namespace() {
     assert!(matches!(result, Err(Error::Xml(_))));
 }
 
-
 #[test]
 fn read_mismatched_tags() {
     let result = Feed::read_from("<feed><a></b></feed>".as_bytes());
@@ -253,31 +252,38 @@ fn author_internal_invalid_tag() {
 
 #[test]
 fn source_internal_invalid_tag() {
-    let result = Feed::read_from("<feed><entry><source><invalid></source></entry></feed>".as_bytes());
+    let result =
+        Feed::read_from("<feed><entry><source><invalid></source></entry></feed>".as_bytes());
     assert!(matches!(result, Err(Error::Xml(_))));
 }
 
 #[test]
 fn content_invalid_xml_lang() {
-    let result = Feed::read_from("<feed><entry><content xml:lang=\"&;\"></content></entry></feed>".as_bytes());
+    let result = Feed::read_from(
+        "<feed><entry><content xml:lang=\"&;\"></content></entry></feed>".as_bytes(),
+    );
     assert!(matches!(result, Err(Error::Xml(_))));
 }
 
 #[test]
 fn content_invalid_xml_base() {
-    let result = Feed::read_from("<feed><entry><content xml:base=\"&;\"></content></entry></feed>".as_bytes());
+    let result = Feed::read_from(
+        "<feed><entry><content xml:base=\"&;\"></content></entry></feed>".as_bytes(),
+    );
     assert!(matches!(result, Err(Error::Xml(_))));
 }
 
 #[test]
 fn content_invalid_type() {
-    let result = Feed::read_from("<feed><entry><content type=\"&;\"></content></entry></feed>".as_bytes());
+    let result =
+        Feed::read_from("<feed><entry><content type=\"&;\"></content></entry></feed>".as_bytes());
     assert!(matches!(result, Err(Error::Xml(_))));
 }
 
 #[test]
 fn content_invalid_src() {
-    let result = Feed::read_from("<feed><entry><content src=\"&;\"></content></entry></feed>".as_bytes());
+    let result =
+        Feed::read_from("<feed><entry><content src=\"&;\"></content></entry></feed>".as_bytes());
     assert!(matches!(result, Err(Error::Xml(_))));
 }
 
