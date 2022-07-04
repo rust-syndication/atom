@@ -4,6 +4,7 @@
 
 - Wrap `quick_xml::XmlError` into a newtype [`#65`](https://github.com/rust-syndication/atom/pull/65)
 - Implement `std::error::Error` for `XmlError`. Mark helper traits as `pub(crate)` to prevent their accidental leakage to public API [`#66`](https://github.com/rust-syndication/atom/pull/66)
+- Bump MSRV (Minimum Supported Rust Version) from 1.40.0 to 1.42.0 [`#66`](https://github.com/rust-syndication/atom/pull/66)
 
 ## 0.11.0 - 2021-10-20
 
