@@ -8,7 +8,7 @@ Library for serializing the Atom web content syndication format.
 
 [Documentation](https://docs.rs/atom_syndication/)
 
-This crate requires *Rustc version 1.56.0 or greater*.
+This crate requires *Rustc version 1.57.0 or greater*.
 
 ## Usage
 
@@ -16,14 +16,14 @@ Add the dependency to your `Cargo.toml`.
 
 ```toml
 [dependencies]
-atom_syndication = "0.11"
+atom_syndication = "0.12"
 ```
 
 Or, if you want [Serde](https://github.com/serde-rs/serde) include the feature like this:
 
 ```toml
 [dependencies]
-atom_syndication = { version = "0.11", features = ["with-serde"] }
+atom_syndication = { version = "0.12", features = ["with-serde"] }
 ```
 
 The package includes a single crate named `atom_syndication`.
