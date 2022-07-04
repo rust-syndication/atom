@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.13.0 - Unreleased
+## 0.12.3 - Unreleased
+
+- Bump MSRV (Minimum Supported Rust Version) from 1.56.0 to 1.57.0 [`#80`](https://github.com/rust-syndication/atom/pull/80)
 
 ## 0.12.2 - 2023-07-26
 
