@@ -5,7 +5,7 @@ use quick_xml::Writer;
 
 use crate::error::XmlError;
 
-pub trait ToXml {
+pub(crate) trait ToXml {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError>;
 }
 
@@ -15,7 +15,7 @@ impl<'a, T: ToXml> ToXml for &'a T {
     }
 }
 
-pub trait ToXmlNamed {
+pub(crate) trait ToXmlNamed {
     fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), XmlError>
     where
         W: Write,
@@ -32,7 +32,7 @@ impl<'a, T: ToXmlNamed> ToXmlNamed for &'a T {
     }
 }
 
-pub trait WriterExt {
+pub(crate) trait WriterExt {
     fn write_text_element<N, T>(&mut self, name: N, text: T) -> Result<(), XmlError>
     where
         N: AsRef<[u8]>,
