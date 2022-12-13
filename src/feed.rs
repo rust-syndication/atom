@@ -932,4 +932,13 @@ mod test {
         assert_eq!(loaded_feed.base(), Some("http://example.com/blog/"));
         assert_eq!(loaded_feed.lang(), Some("fr_FR"));
     }
+
+    #[test]
+    fn test_add_stylesheet() {
+        let mut feed = Feed::default();
+        feed.set_stylesheet(Some("feed.xsl".into()));
+        let xml_fragment = r#"<?xml version="1.0"?>
+<?xml-stylesheet href="feed.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom"><title></title><id></id><updated>1970-01-01T00:00:00+00:00</updated></feed>"#;
+        assert_eq!(feed.to_string(), xml_fragment);
+    }
 }
