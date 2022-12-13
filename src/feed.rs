@@ -75,6 +75,8 @@ pub struct Feed {
     pub base: Option<String>,
     /// Indicates the natural language for the element.
     pub lang: Option<String>,
+    /// The URL to a stylesheet for the feed.
+    pub stylesheet: Option<String>,
 }
 
 impl Feed {
@@ -663,12 +665,25 @@ impl Feed {
         self.lang.as_deref()
     }
 
-    /// Set the base URL of the feed.
+    /// Set the natural language of the feed.
     pub fn set_lang<V>(&mut self, lang: V)
     where
         V: Into<Option<String>>,
     {
         self.lang = lang.into();
+    }
+
+    /// Return the stylesheet URL
+    pub fn stylesheet(&self) -> Option<&str> {
+        self.stylesheet.as_deref()
+    }
+
+    /// Set the stylesheet URL of the feed.
+    pub fn set_stylesheet<V>(&mut self, stylesheet: V)
+    where
+        V: Into<Option<String>>,
+    {
+        self.stylesheet = stylesheet.into()
     }
 }
 
@@ -768,6 +783,13 @@ impl FromXml for Feed {
 
 impl ToXml for Feed {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
+        if let Some(ref stylesheet) = self.stylesheet {
+            let sheet_text = format!("xml-stylesheet href=\"{}\" type=\"text/xsl\"", stylesheet);
+            writer
+                .write_event(Event::PI(BytesText::from_escaped_str(sheet_text.as_str())))
+                .map_err(XmlError::new)?;
+        }
+
         let name = b"feed";
         let mut element = BytesStart::borrowed(name, name.len());
         element.push_attribute(("xmlns", "http://www.w3.org/2005/Atom"));
@@ -868,6 +890,7 @@ impl Default for Feed {
             namespaces: BTreeMap::default(),
             base: None,
             lang: None,
+            stylesheet: None,
         }
     }
 }
