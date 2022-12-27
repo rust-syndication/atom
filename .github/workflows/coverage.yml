@@ -9,19 +9,10 @@ on:
 jobs:
   coverage:
     runs-on: ubuntu-latest
+    container:
+      image: xd009642/tarpaulin:latest
+      options: --security-opt seccomp=unconfined
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
-    - uses: actions-rs/install@v0.1
-      with:
-        crate: cargo-tarpaulin
-        use-tool-cache: true
-    - name: Run coverage
-      run: cargo tarpaulin -f -t 5 --out Xml -v -- --test-threads=1
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{secrets.CODECOV_TOKEN}}
+    - uses: actions/checkout@v3
+    - run: cargo tarpaulin -f -t 5 --out Xml -v -- --test-threads=1
+    - uses: codecov/codecov-action@v3
