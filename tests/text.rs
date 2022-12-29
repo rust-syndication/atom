@@ -45,7 +45,10 @@ fn text_empty() {
 fn text_html() {
     let feed = feed!("tests/data/text_html.xml");
     let title = feed.title();
-    assert_eq!(title, "<p>Feed Title</p>");
+    assert_eq!(
+        title,
+        "<p><b>F</b>eed Title</p><!-- <b>Important</b> comment -->"
+    );
     assert_eq!(title.base, None);
     assert_eq!(title.lang, None);
     assert_eq!(title.r#type, TextType::Html);
@@ -133,7 +136,7 @@ fn text_xhtml() {
     let title = feed.title();
     assert_eq!(
         title,
-        "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Feed Title</p></div>"
+        "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Feed Title</p><!-- <b>Important</b> comment -->&lt;hr/&gt;</div>"
     );
     assert_eq!(title.base, None);
     assert_eq!(title.lang, None);
