@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
@@ -16,7 +17,7 @@ use crate::person::Person;
 use crate::source::Source;
 use crate::text::Text;
 use crate::toxml::{ToXml, WriterExt};
-use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
+use crate::util::{atom_datetime, atom_text, decode, default_fixed_datetime, skip, FixedDateTime};
 
 /// Represents an entry in an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -512,39 +513,45 @@ impl FromXml for Entry {
         let mut buf = Vec::new();
 
         loop {
-            match reader.read_event(&mut buf).map_err(XmlError::new)? {
-                Event::Start(element) => match element.name() {
-                    b"id" => entry.id = atom_text(reader)?.unwrap_or_default(),
-                    b"title" => entry.title = Text::from_xml(reader, element.attributes())?,
-                    b"updated" => {
+            match reader.read_event_into(&mut buf).map_err(XmlError::new)? {
+                Event::Start(element) => match decode(element.name().as_ref(), reader)? {
+                    Cow::Borrowed("id") => entry.id = atom_text(reader)?.unwrap_or_default(),
+                    Cow::Borrowed("title") => {
+                        entry.title = Text::from_xml(reader, element.attributes())?
+                    }
+                    Cow::Borrowed("updated") => {
                         entry.updated =
                             atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime)
                     }
-                    b"author" => entry
+                    Cow::Borrowed("author") => entry
                         .authors
                         .push(Person::from_xml(reader, element.attributes())?),
-                    b"category" => entry
-                        .categories
-                        .push(Category::from_xml(reader, element.attributes())?),
-                    b"contributor" => entry
+                    Cow::Borrowed("category") => {
+                        entry.categories.push(Category::from_xml(reader, &element)?);
+                        skip(element.name(), reader)?;
+                    }
+                    Cow::Borrowed("contributor") => entry
                         .contributors
                         .push(Person::from_xml(reader, element.attributes())?),
-                    b"link" => entry
-                        .links
-                        .push(Link::from_xml(reader, element.attributes())?),
-                    b"published" => entry.published = atom_datetime(reader)?,
-                    b"rights" => entry.rights = Some(Text::from_xml(reader, element.attributes())?),
-                    b"source" => {
+                    Cow::Borrowed("link") => {
+                        entry.links.push(Link::from_xml(reader, &element)?);
+                        skip(element.name(), reader)?;
+                    }
+                    Cow::Borrowed("published") => entry.published = atom_datetime(reader)?,
+                    Cow::Borrowed("rights") => {
+                        entry.rights = Some(Text::from_xml(reader, element.attributes())?)
+                    }
+                    Cow::Borrowed("source") => {
                         entry.source = Some(Source::from_xml(reader, element.attributes())?)
                     }
-                    b"summary" => {
+                    Cow::Borrowed("summary") => {
                         entry.summary = Some(Text::from_xml(reader, element.attributes())?)
                     }
-                    b"content" => {
+                    Cow::Borrowed("content") => {
                         entry.content = Some(Content::from_xml(reader, element.attributes())?)
                     }
                     n => {
-                        if let Some((ns, name)) = extension_name(element.name()) {
+                        if let Some((ns, name)) = extension_name(n.as_ref()) {
                             parse_extension(
                                 reader,
                                 element.attributes(),
@@ -553,9 +560,7 @@ impl FromXml for Entry {
                                 &mut entry.extensions,
                             )?;
                         } else {
-                            reader
-                                .read_to_end(n, &mut Vec::new())
-                                .map_err(XmlError::new)?;
+                            skip(element.name(), reader)?;
                         }
                     }
                 },
@@ -573,24 +578,24 @@ impl FromXml for Entry {
 
 impl ToXml for Entry {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
-        let name = b"entry";
+        let name = "entry";
         writer
-            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))
+            .write_event(Event::Start(BytesStart::new(name)))
             .map_err(XmlError::new)?;
-        writer.write_object_named(&self.title, b"title")?;
-        writer.write_text_element(b"id", &*self.id)?;
-        writer.write_text_element(b"updated", &*self.updated.to_rfc3339())?;
+        writer.write_object_named(&self.title, "title")?;
+        writer.write_text_element("id", &self.id)?;
+        writer.write_text_element("updated", &self.updated.to_rfc3339())?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
         writer.write_objects_named(&self.contributors, "contributor")?;
         writer.write_objects(&self.links)?;
 
         if let Some(ref published) = self.published {
-            writer.write_text_element(b"published", &published.to_rfc3339())?;
+            writer.write_text_element("published", &published.to_rfc3339())?;
         }
 
         if let Some(ref rights) = self.rights {
-            writer.write_object_named(rights, b"rights")?;
+            writer.write_object_named(rights, "rights")?;
         }
 
         if let Some(ref source) = self.source {
@@ -598,7 +603,7 @@ impl ToXml for Entry {
         }
 
         if let Some(ref summary) = self.summary {
-            writer.write_object_named(summary, b"summary")?;
+            writer.write_object_named(summary, "summary")?;
         }
 
         if let Some(ref content) = self.content {
@@ -612,7 +617,7 @@ impl ToXml for Entry {
         }
 
         writer
-            .write_event(Event::End(BytesEnd::borrowed(name)))
+            .write_event(Event::End(BytesEnd::new(name)))
             .map_err(XmlError::new)?;
 
         Ok(())

@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
@@ -8,7 +9,7 @@ use quick_xml::Writer;
 use crate::error::{Error, XmlError};
 use crate::fromxml::FromXml;
 use crate::toxml::ToXml;
-use crate::util::{atom_text, atom_xhtml};
+use crate::util::{atom_text, atom_xhtml, attr_value, decode};
 
 /// Represents the content of an Atom entry
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -173,30 +174,18 @@ impl FromXml for Content {
         let mut content = Content::default();
 
         for att in atts.with_checks(false).flatten() {
-            match att.key {
-                b"xml:base" => {
-                    content.base = Some(
-                        att.unescape_and_decode_value(reader)
-                            .map_err(XmlError::new)?,
-                    )
+            match decode(att.key.as_ref(), reader)? {
+                Cow::Borrowed("xml:base") => {
+                    content.base = Some(attr_value(&att, reader)?.to_string());
                 }
-                b"xml:lang" => {
-                    content.lang = Some(
-                        att.unescape_and_decode_value(reader)
-                            .map_err(XmlError::new)?,
-                    )
+                Cow::Borrowed("xml:lang") => {
+                    content.lang = Some(attr_value(&att, reader)?.to_string());
                 }
-                b"type" => {
-                    content.content_type = Some(
-                        att.unescape_and_decode_value(reader)
-                            .map_err(XmlError::new)?,
-                    )
+                Cow::Borrowed("type") => {
+                    content.content_type = Some(attr_value(&att, reader)?.to_string());
                 }
-                b"src" => {
-                    content.src = Some(
-                        att.unescape_and_decode_value(reader)
-                            .map_err(XmlError::new)?,
-                    )
+                Cow::Borrowed("src") => {
+                    content.src = Some(attr_value(&att, reader)?.to_string());
                 }
                 _ => {}
             }
@@ -213,8 +202,8 @@ impl FromXml for Content {
 
 impl ToXml for Content {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
-        let name = b"content";
-        let mut element = BytesStart::borrowed(name, name.len());
+        let name = "content";
+        let mut element = BytesStart::new(name);
 
         if let Some(ref base) = self.base {
             element.push_attribute(("xml:base", base.as_str()));
@@ -244,16 +233,16 @@ impl ToXml for Content {
             writer
                 .write_event(Event::Text(
                     if self.content_type.as_deref() == Some("xhtml") {
-                        BytesText::from_escaped(value.as_bytes())
+                        BytesText::from_escaped(value)
                     } else {
-                        BytesText::from_plain(value.as_bytes())
+                        BytesText::new(value)
                     },
                 ))
                 .map_err(XmlError::new)?;
         }
 
         writer
-            .write_event(Event::End(BytesEnd::borrowed(name)))
+            .write_event(Event::End(BytesEnd::new(name)))
             .map_err(XmlError::new)?;
 
         Ok(())
@@ -272,6 +261,7 @@ impl ContentBuilder {
 mod test {
     use super::*;
     use crate::error::Error;
+    use crate::util::decode;
 
     fn lines(text: &str) -> Vec<&str> {
         text.lines()
@@ -293,9 +283,9 @@ mod test {
 
         loop {
             let mut buf = Vec::new();
-            match reader.read_event(&mut buf).map_err(XmlError::new)? {
+            match reader.read_event_into(&mut buf).map_err(XmlError::new)? {
                 Event::Start(element) => {
-                    if element.name() == b"content" {
+                    if decode(element.name().as_ref(), &reader)? == "content" {
                         let content = Content::from_xml(&mut reader, element.attributes())?;
                         return Ok(content);
                     } else {

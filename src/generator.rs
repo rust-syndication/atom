@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
@@ -8,7 +9,7 @@ use quick_xml::Writer;
 use crate::error::{Error, XmlError};
 use crate::fromxml::FromXml;
 use crate::toxml::ToXml;
-use crate::util::atom_text;
+use crate::util::{atom_text, attr_value, decode};
 
 /// Represents the generator of an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -138,18 +139,12 @@ impl FromXml for Generator {
         let mut generator = Generator::default();
 
         for att in atts.with_checks(false).flatten() {
-            match att.key {
-                b"uri" => {
-                    generator.uri = Some(
-                        att.unescape_and_decode_value(reader)
-                            .map_err(XmlError::new)?,
-                    )
+            match decode(att.key.as_ref(), reader)? {
+                Cow::Borrowed("uri") => {
+                    generator.uri = Some(attr_value(&att, reader)?.to_string());
                 }
-                b"version" => {
-                    generator.version = Some(
-                        att.unescape_and_decode_value(reader)
-                            .map_err(XmlError::new)?,
-                    )
+                Cow::Borrowed("version") => {
+                    generator.version = Some(attr_value(&att, reader)?.to_string());
                 }
                 _ => {}
             }
@@ -163,8 +158,8 @@ impl FromXml for Generator {
 
 impl ToXml for Generator {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
-        let name = b"generator";
-        let mut element = BytesStart::borrowed(name, name.len());
+        let name = "generator";
+        let mut element = BytesStart::new(name);
 
         if let Some(ref uri) = self.uri {
             element.push_attribute(("uri", &**uri));
@@ -178,10 +173,10 @@ impl ToXml for Generator {
             .write_event(Event::Start(element))
             .map_err(XmlError::new)?;
         writer
-            .write_event(Event::Text(BytesText::from_escaped(self.value.as_bytes())))
+            .write_event(Event::Text(BytesText::new(&self.value)))
             .map_err(XmlError::new)?;
         writer
-            .write_event(Event::End(BytesEnd::borrowed(name)))
+            .write_event(Event::End(BytesEnd::new(name)))
             .map_err(XmlError::new)?;
 
         Ok(())

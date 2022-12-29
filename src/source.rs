@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
@@ -13,7 +14,7 @@ use crate::link::Link;
 use crate::person::Person;
 use crate::text::Text;
 use crate::toxml::{ToXml, WriterExt};
-use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
+use crate::util::{atom_datetime, atom_text, decode, default_fixed_datetime, skip, FixedDateTime};
 
 /// Represents the source of an Atom entry
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -454,40 +455,44 @@ impl FromXml for Source {
         let mut buf = Vec::new();
 
         loop {
-            match reader.read_event(&mut buf).map_err(XmlError::new)? {
-                Event::Start(element) => match element.name() {
-                    b"id" => source.id = atom_text(reader)?.unwrap_or_default(),
-                    b"title" => source.title = Text::from_xml(reader, element.attributes())?,
-                    b"updated" => {
+            match reader.read_event_into(&mut buf).map_err(XmlError::new)? {
+                Event::Start(element) => match decode(element.name().as_ref(), reader)? {
+                    Cow::Borrowed("id") => source.id = atom_text(reader)?.unwrap_or_default(),
+                    Cow::Borrowed("title") => {
+                        source.title = Text::from_xml(reader, element.attributes())?
+                    }
+                    Cow::Borrowed("updated") => {
                         source.updated =
                             atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime)
                     }
-                    b"author" => source
+                    Cow::Borrowed("author") => source
                         .authors
                         .push(Person::from_xml(reader, element.attributes())?),
-                    b"category" => source
-                        .categories
-                        .push(Category::from_xml(reader, element.attributes())?),
-                    b"contributor" => source
+                    Cow::Borrowed("category") => {
+                        source
+                            .categories
+                            .push(Category::from_xml(reader, &element)?);
+                        skip(element.name(), reader)?;
+                    }
+                    Cow::Borrowed("contributor") => source
                         .contributors
                         .push(Person::from_xml(reader, element.attributes())?),
-                    b"generator" => {
+                    Cow::Borrowed("generator") => {
                         source.generator = Some(Generator::from_xml(reader, element.attributes())?)
                     }
-                    b"icon" => source.icon = atom_text(reader)?,
-                    b"link" => source
-                        .links
-                        .push(Link::from_xml(reader, element.attributes())?),
-                    b"logo" => source.logo = atom_text(reader)?,
-                    b"rights" => {
+                    Cow::Borrowed("icon") => source.icon = atom_text(reader)?,
+                    Cow::Borrowed("link") => {
+                        source.links.push(Link::from_xml(reader, &element)?);
+                        skip(element.name(), reader)?;
+                    }
+                    Cow::Borrowed("logo") => source.logo = atom_text(reader)?,
+                    Cow::Borrowed("rights") => {
                         source.rights = Some(Text::from_xml(reader, element.attributes())?)
                     }
-                    b"subtitle" => {
+                    Cow::Borrowed("subtitle") => {
                         source.subtitle = Some(Text::from_xml(reader, element.attributes())?)
                     }
-                    n => reader
-                        .read_to_end(n, &mut Vec::new())
-                        .map_err(XmlError::new)?,
+                    _ => skip(element.name(), reader)?,
                 },
                 Event::End(_) => break,
                 Event::Eof => return Err(Error::Eof),
@@ -503,13 +508,13 @@ impl FromXml for Source {
 
 impl ToXml for Source {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
-        let name = b"source";
+        let name = "source";
         writer
-            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))
+            .write_event(Event::Start(BytesStart::new(name)))
             .map_err(XmlError::new)?;
-        writer.write_object_named(&self.title, b"title")?;
-        writer.write_text_element(b"id", &*self.id)?;
-        writer.write_text_element(b"updated", &self.updated.to_rfc3339())?;
+        writer.write_object_named(&self.title, "title")?;
+        writer.write_text_element("id", &self.id)?;
+        writer.write_text_element("updated", &self.updated.to_rfc3339())?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
         writer.write_objects_named(&self.contributors, "contributor")?;
@@ -519,25 +524,25 @@ impl ToXml for Source {
         }
 
         if let Some(ref icon) = self.icon {
-            writer.write_text_element(b"icon", &**icon)?;
+            writer.write_text_element("icon", icon)?;
         }
 
         writer.write_objects(&self.links)?;
 
         if let Some(ref logo) = self.logo {
-            writer.write_text_element(b"logo", &**logo)?;
+            writer.write_text_element("logo", logo)?;
         }
 
         if let Some(ref rights) = self.rights {
-            writer.write_object_named(rights, b"rights")?;
+            writer.write_object_named(rights, "rights")?;
         }
 
         if let Some(ref subtitle) = self.subtitle {
-            writer.write_object_named(subtitle, b"subtitle")?;
+            writer.write_object_named(subtitle, "subtitle")?;
         }
 
         writer
-            .write_event(Event::End(BytesEnd::borrowed(name)))
+            .write_event(Event::End(BytesEnd::new(name)))
             .map_err(XmlError::new)?;
 
         Ok(())

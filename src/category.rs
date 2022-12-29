@@ -1,13 +1,13 @@
+use std::borrow::Cow;
 use std::io::{BufRead, Write};
 
-use quick_xml::events::attributes::Attributes;
 use quick_xml::events::{BytesStart, Event};
 use quick_xml::Reader;
 use quick_xml::Writer;
 
 use crate::error::{Error, XmlError};
-use crate::fromxml::FromXml;
 use crate::toxml::ToXml;
+use crate::util::{attr_value, decode};
 
 /// Represents a category in an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -129,48 +129,34 @@ impl Category {
     }
 }
 
-impl FromXml for Category {
-    fn from_xml<B: BufRead>(
+impl Category {
+    pub(crate) fn from_xml<'s, B: BufRead>(
         reader: &mut Reader<B>,
-        mut atts: Attributes<'_>,
+        element: &'s BytesStart<'s>,
     ) -> Result<Self, Error> {
         let mut category = Category::default();
 
-        for att in atts.with_checks(false).flatten() {
-            match att.key {
-                b"term" => {
-                    category.term = att
-                        .unescape_and_decode_value(reader)
-                        .map_err(XmlError::new)?
+        for att in element.attributes().with_checks(false).flatten() {
+            match decode(att.key.as_ref(), reader)? {
+                Cow::Borrowed("term") => {
+                    category.term = attr_value(&att, reader)?.to_string();
                 }
-                b"scheme" => {
-                    category.scheme = Some(
-                        att.unescape_and_decode_value(reader)
-                            .map_err(XmlError::new)?,
-                    )
+                Cow::Borrowed("scheme") => {
+                    category.scheme = Some(attr_value(&att, reader)?.to_string());
                 }
-                b"label" => {
-                    category.label = Some(
-                        att.unescape_and_decode_value(reader)
-                            .map_err(XmlError::new)?,
-                    )
+                Cow::Borrowed("label") => {
+                    category.label = Some(attr_value(&att, reader)?.to_string());
                 }
                 _ => {}
             }
         }
-
-        reader
-            .read_to_end(b"category", &mut Vec::new())
-            .map_err(XmlError::new)?;
-
         Ok(category)
     }
 }
 
 impl ToXml for Category {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
-        let name = b"category";
-        let mut element = BytesStart::borrowed(name, name.len());
+        let mut element = BytesStart::new("category");
         element.push_attribute(("term", &*self.term));
 
         if let Some(ref scheme) = self.scheme {

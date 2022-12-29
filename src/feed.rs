@@ -1,12 +1,11 @@
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::io::{BufRead, Write};
 use std::str::{self, FromStr};
 
 use quick_xml::events::attributes::Attributes;
 use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event};
-// use quick_xml::Error as XmlError;
-use quick_xml::Reader;
-use quick_xml::Writer;
+use quick_xml::{Reader, Writer};
 
 use crate::category::Category;
 use crate::entry::Entry;
@@ -19,7 +18,9 @@ use crate::link::Link;
 use crate::person::Person;
 use crate::text::Text;
 use crate::toxml::{ToXml, WriterExt};
-use crate::util::{atom_datetime, atom_text, default_fixed_datetime, FixedDateTime};
+use crate::util::{
+    atom_datetime, atom_text, attr_value, decode, default_fixed_datetime, skip, FixedDateTime,
+};
 
 /// Represents an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -97,9 +98,9 @@ impl Feed {
         let mut buf = Vec::new();
 
         loop {
-            match reader.read_event(&mut buf).map_err(XmlError::new)? {
+            match reader.read_event_into(&mut buf).map_err(XmlError::new)? {
                 Event::Start(element) => {
-                    if element.name() == b"feed" {
+                    if decode(element.name().as_ref(), &reader)? == "feed" {
                         return Feed::from_xml(&mut reader, element.attributes());
                     } else {
                         return Err(Error::InvalidStartTag);
@@ -132,10 +133,10 @@ impl Feed {
     pub fn write_to<W: Write>(&self, writer: W) -> Result<W, Error> {
         let mut writer = Writer::new(writer);
         writer
-            .write_event(Event::Decl(BytesDecl::new(b"1.0", None, None)))
+            .write_event(Event::Decl(BytesDecl::new("1.0", None, None)))
             .map_err(XmlError::new)?;
         writer
-            .write_event(Event::Text(BytesText::from_escaped("\n".as_bytes())))
+            .write_event(Event::Text(BytesText::new("\n")))
             .map_err(XmlError::new)?;
         self.to_xml(&mut writer)?;
         Ok(writer.into_inner())
@@ -680,66 +681,64 @@ impl FromXml for Feed {
         let mut feed = Feed::default();
         let mut buf = Vec::new();
 
-        for attr in atts.with_checks(false).flatten() {
-            match attr.key {
-                b"xml:base" => {
-                    feed.base = Some(
-                        attr.unescape_and_decode_value(reader)
-                            .map_err(XmlError::new)?,
-                    )
+        for att in atts.with_checks(false).flatten() {
+            match decode(att.key.as_ref(), reader)? {
+                Cow::Borrowed("xml:base") => {
+                    feed.base = Some(attr_value(&att, reader)?.to_string())
                 }
-                b"xml:lang" => {
-                    feed.lang = Some(
-                        attr.unescape_and_decode_value(reader)
-                            .map_err(XmlError::new)?,
-                    )
+                Cow::Borrowed("xml:lang") => {
+                    feed.lang = Some(attr_value(&att, reader)?.to_string())
                 }
-                b"xmlns:dc" => {}
-                attr_key if attr_key.starts_with(b"xmlns:") => {
-                    let ns = str::from_utf8(&attr_key[6..])?.to_string();
-                    let ns_url = attr
-                        .unescape_and_decode_value(reader)
-                        .map_err(XmlError::new)?;
-                    feed.namespaces.insert(ns, ns_url);
+                Cow::Borrowed("xmlns:dc") => {}
+                key => {
+                    if let Some(ns) = key.strip_prefix("xmlns:") {
+                        feed.namespaces
+                            .insert(ns.to_string(), attr_value(&att, reader)?.to_string());
+                    }
                 }
-                _ => {}
             }
         }
 
         loop {
-            match reader.read_event(&mut buf).map_err(XmlError::new)? {
-                Event::Start(element) => match element.name() {
-                    b"title" => feed.title = Text::from_xml(reader, element.attributes())?,
-                    b"id" => feed.id = atom_text(reader)?.unwrap_or_default(),
-                    b"updated" => {
+            match reader.read_event_into(&mut buf).map_err(XmlError::new)? {
+                Event::Start(element) => match decode(element.name().as_ref(), reader)? {
+                    Cow::Borrowed("title") => {
+                        feed.title = Text::from_xml(reader, element.attributes())?
+                    }
+                    Cow::Borrowed("id") => feed.id = atom_text(reader)?.unwrap_or_default(),
+                    Cow::Borrowed("updated") => {
                         feed.updated = atom_datetime(reader)?.unwrap_or_else(default_fixed_datetime)
                     }
-                    b"author" => feed
+                    Cow::Borrowed("author") => feed
                         .authors
                         .push(Person::from_xml(reader, element.attributes())?),
-                    b"category" => feed
-                        .categories
-                        .push(Category::from_xml(reader, element.attributes())?),
-                    b"contributor" => feed
+                    Cow::Borrowed("category") => {
+                        feed.categories.push(Category::from_xml(reader, &element)?);
+                        skip(element.name(), reader)?;
+                    }
+                    Cow::Borrowed("contributor") => feed
                         .contributors
                         .push(Person::from_xml(reader, element.attributes())?),
-                    b"generator" => {
+                    Cow::Borrowed("generator") => {
                         feed.generator = Some(Generator::from_xml(reader, element.attributes())?)
                     }
-                    b"icon" => feed.icon = atom_text(reader)?,
-                    b"link" => feed
-                        .links
-                        .push(Link::from_xml(reader, element.attributes())?),
-                    b"logo" => feed.logo = atom_text(reader)?,
-                    b"rights" => feed.rights = Some(Text::from_xml(reader, element.attributes())?),
-                    b"subtitle" => {
+                    Cow::Borrowed("icon") => feed.icon = atom_text(reader)?,
+                    Cow::Borrowed("link") => {
+                        feed.links.push(Link::from_xml(reader, &element)?);
+                        skip(element.name(), reader)?;
+                    }
+                    Cow::Borrowed("logo") => feed.logo = atom_text(reader)?,
+                    Cow::Borrowed("rights") => {
+                        feed.rights = Some(Text::from_xml(reader, element.attributes())?)
+                    }
+                    Cow::Borrowed("subtitle") => {
                         feed.subtitle = Some(Text::from_xml(reader, element.attributes())?)
                     }
-                    b"entry" => feed
+                    Cow::Borrowed("entry") => feed
                         .entries
                         .push(Entry::from_xml(reader, element.attributes())?),
                     n => {
-                        if let Some((ns, name)) = extension_name(element.name()) {
+                        if let Some((ns, name)) = extension_name(n.as_ref()) {
                             parse_extension(
                                 reader,
                                 element.attributes(),
@@ -748,9 +747,7 @@ impl FromXml for Feed {
                                 &mut feed.extensions,
                             )?;
                         } else {
-                            reader
-                                .read_to_end(n, &mut Vec::new())
-                                .map_err(XmlError::new)?;
+                            skip(element.name(), reader)?;
                         }
                     }
                 },
@@ -768,8 +765,8 @@ impl FromXml for Feed {
 
 impl ToXml for Feed {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
-        let name = b"feed";
-        let mut element = BytesStart::borrowed(name, name.len());
+        let name = "feed";
+        let mut element = BytesStart::new(name);
         element.push_attribute(("xmlns", "http://www.w3.org/2005/Atom"));
 
         for (ns, uri) in &self.namespaces {
@@ -787,9 +784,9 @@ impl ToXml for Feed {
         writer
             .write_event(Event::Start(element))
             .map_err(XmlError::new)?;
-        writer.write_object_named(&self.title, b"title")?;
-        writer.write_text_element(b"id", &*self.id)?;
-        writer.write_text_element(b"updated", &*self.updated.to_rfc3339())?;
+        writer.write_object_named(&self.title, "title")?;
+        writer.write_text_element("id", &self.id)?;
+        writer.write_text_element("updated", &self.updated.to_rfc3339())?;
         writer.write_objects_named(&self.authors, "author")?;
         writer.write_objects(&self.categories)?;
         writer.write_objects_named(&self.contributors, "contributor")?;
@@ -799,21 +796,21 @@ impl ToXml for Feed {
         }
 
         if let Some(ref icon) = self.icon {
-            writer.write_text_element(b"icon", &**icon)?;
+            writer.write_text_element("icon", icon)?;
         }
 
         writer.write_objects(&self.links)?;
 
         if let Some(ref logo) = self.logo {
-            writer.write_text_element(b"logo", &**logo)?;
+            writer.write_text_element("logo", logo)?;
         }
 
         if let Some(ref rights) = self.rights {
-            writer.write_object_named(rights, b"rights")?;
+            writer.write_object_named(rights, "rights")?;
         }
 
         if let Some(ref subtitle) = self.subtitle {
-            writer.write_object_named(subtitle, b"subtitle")?;
+            writer.write_object_named(subtitle, "subtitle")?;
         }
 
         writer.write_objects(&self.entries)?;
@@ -825,7 +822,7 @@ impl ToXml for Feed {
         }
 
         writer
-            .write_event(Event::End(BytesEnd::borrowed(name)))
+            .write_event(Event::End(BytesEnd::new(name)))
             .map_err(XmlError::new)?;
 
         Ok(())
