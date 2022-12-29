@@ -83,6 +83,7 @@ pub use crate::error::Error;
 pub use crate::feed::Feed;
 #[cfg(feature = "builders")]
 pub use crate::feed::FeedBuilder;
+pub use crate::feed::WriteConfig;
 pub use crate::generator::Generator;
 #[cfg(feature = "builders")]
 pub use crate::generator::GeneratorBuilder;

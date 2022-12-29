@@ -6,6 +6,7 @@
 - Implement `std::error::Error` for `XmlError`. Mark helper traits as `pub(crate)` to prevent their accidental leakage to public API [`#66`](https://github.com/rust-syndication/atom/pull/66)
 - Bump MSRV (Minimum Supported Rust Version) from 1.40.0 to 1.54.0 [`#66`](https://github.com/rust-syndication/atom/pull/66) and [`#69`](https://github.com/rust-syndication/atom/pull/69)
 - Upgrade `quick_xml` to `0.27` and `derive_builder` to `0.12` [`#67`](https://github.com/rust-syndication/atom/pull/67)
+- Allow to configure emitted XML [`#70`](https://github.com/rust-syndication/atom/pull/70)
 
 ## 0.11.0 - 2021-10-20
 

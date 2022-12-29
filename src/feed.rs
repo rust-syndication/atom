@@ -22,6 +22,24 @@ use crate::util::{
     atom_datetime, atom_text, attr_value, decode, default_fixed_datetime, skip, FixedDateTime,
 };
 
+/// Various options which control XML writer
+#[derive(Clone, Copy)]
+pub struct WriteConfig {
+    /// Write XML document declaration at the beginning of a document. Default is `true`.
+    pub write_document_declaration: bool,
+    /// Indent XML tags. Default is `None`.
+    pub indent_size: Option<usize>,
+}
+
+impl Default for WriteConfig {
+    fn default() -> Self {
+        Self {
+            write_document_declaration: true,
+            indent_size: None,
+        }
+    }
+}
+
 /// Represents an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Clone, PartialEq)]
@@ -116,28 +134,77 @@ impl Feed {
         Err(Error::Eof)
     }
 
-    /// Attempt to write this Atom feed to a writer.
+    /// Attempt to write this Atom feed to a writer using default `WriteConfig`.
     ///
     /// # Examples
     ///
-    /// ```no_run
+    /// ```
     /// use std::io::BufReader;
     /// use std::fs::File;
     /// use atom_syndication::Feed;
     ///
-    /// let file = File::open("example.xml").unwrap();
-    /// let feed = Feed::read_from(BufReader::new(file)).unwrap();
-    /// let out = File::create("out.xml").unwrap();
-    /// feed.write_to(out).unwrap();
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let feed = Feed {
+    ///     title: "Feed Title".into(),
+    ///     id: "Feed ID".into(),
+    ///     ..Default::default()
+    /// };
+    ///
+    /// let out = feed.write_to(Vec::new())?;
+    /// assert_eq!(&out, br#"<?xml version="1.0"?>
+    /// <feed xmlns="http://www.w3.org/2005/Atom"><title>Feed Title</title><id>Feed ID</id><updated>1970-01-01T00:00:00+00:00</updated></feed>"#);
+    /// # Ok(()) }
     /// ```
     pub fn write_to<W: Write>(&self, writer: W) -> Result<W, Error> {
-        let mut writer = Writer::new(writer);
-        writer
-            .write_event(Event::Decl(BytesDecl::new("1.0", None, None)))
-            .map_err(XmlError::new)?;
-        writer
-            .write_event(Event::Text(BytesText::new("\n")))
-            .map_err(XmlError::new)?;
+        self.write_with_config(writer, WriteConfig::default())
+    }
+
+    /// Attempt to write this Atom feed to a writer.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::io::BufReader;
+    /// use std::fs::File;
+    /// use atom_syndication::{Feed, WriteConfig};
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let feed = Feed {
+    ///     title: "Feed Title".into(),
+    ///     id: "Feed ID".into(),
+    ///     ..Default::default()
+    /// };
+    ///
+    /// let mut out = Vec::new();
+    /// let config = WriteConfig {
+    ///     write_document_declaration: false,
+    ///     indent_size: Some(2),
+    /// };
+    /// feed.write_with_config(&mut out, config)?;
+    /// assert_eq!(&out, br#"<feed xmlns="http://www.w3.org/2005/Atom">
+    ///   <title>Feed Title</title>
+    ///   <id>Feed ID</id>
+    ///   <updated>1970-01-01T00:00:00+00:00</updated>
+    /// </feed>"#);
+    /// # Ok(()) }
+    /// ```
+    pub fn write_with_config<W: Write>(
+        &self,
+        writer: W,
+        write_config: WriteConfig,
+    ) -> Result<W, Error> {
+        let mut writer = match write_config.indent_size {
+            Some(indent_size) => Writer::new_with_indent(writer, b' ', indent_size),
+            None => Writer::new(writer),
+        };
+        if write_config.write_document_declaration {
+            writer
+                .write_event(Event::Decl(BytesDecl::new("1.0", None, None)))
+                .map_err(XmlError::new)?;
+            writer
+                .write_event(Event::Text(BytesText::from_escaped("\n")))
+                .map_err(XmlError::new)?;
+        }
         self.to_xml(&mut writer)?;
         Ok(writer.into_inner())
     }
@@ -905,5 +972,68 @@ mod test {
         assert_eq!(loaded_feed, feed);
         assert_eq!(loaded_feed.base(), Some("http://example.com/blog/"));
         assert_eq!(loaded_feed.lang(), Some("fr_FR"));
+    }
+
+    #[test]
+    fn test_write_no_decl() {
+        let feed = Feed::default();
+        let xml = feed
+            .write_with_config(
+                Vec::new(),
+                WriteConfig {
+                    write_document_declaration: false,
+                    indent_size: None,
+                },
+            )
+            .unwrap();
+        assert_eq!(
+            String::from_utf8_lossy(&xml),
+            r#"<feed xmlns="http://www.w3.org/2005/Atom"><title></title><id></id><updated>1970-01-01T00:00:00+00:00</updated></feed>"#
+        );
+    }
+
+    #[test]
+    fn test_write_indented() {
+        let feed = Feed::default();
+        let xml = feed
+            .write_with_config(
+                Vec::new(),
+                WriteConfig {
+                    write_document_declaration: true,
+                    indent_size: Some(4),
+                },
+            )
+            .unwrap();
+        assert_eq!(
+            String::from_utf8_lossy(&xml),
+            r#"<?xml version="1.0"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title></title>
+    <id></id>
+    <updated>1970-01-01T00:00:00+00:00</updated>
+</feed>"#
+        );
+    }
+
+    #[test]
+    fn test_write_no_decl_indented() {
+        let feed = Feed::default();
+        let xml = feed
+            .write_with_config(
+                Vec::new(),
+                WriteConfig {
+                    write_document_declaration: false,
+                    indent_size: Some(4),
+                },
+            )
+            .unwrap();
+        assert_eq!(
+            String::from_utf8_lossy(&xml),
+            r#"<feed xmlns="http://www.w3.org/2005/Atom">
+    <title></title>
+    <id></id>
+    <updated>1970-01-01T00:00:00+00:00</updated>
+</feed>"#
+        );
     }
 }
