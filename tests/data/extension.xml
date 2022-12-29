@@ -1,10 +1,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xmlns:ext="http://example.com">
-	<ext:title type="text">Title</ext:title>
+	<ext:title type="text">&lt;strong&gt;Title&lt;/strong&gt;</ext:title>
 	<ext:parent>
 		<ext:child>Child</ext:child>
 	</ext:parent>
 	<entry>
-		<ext:title type="text"> T<![CDATA[itl]]>e  </ext:title>
+		<ext:title type="text"> &lt;strong&gt;T<![CDATA[itle</strong>]]>  </ext:title>
 		<ext:parent>
 			<ext:child>Child</ext:child>
 		</ext:parent>

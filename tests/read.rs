@@ -157,7 +157,7 @@ fn read_extension() {
 
         assert!(map.contains_key("title"));
         let title = map.get("title").unwrap().first().unwrap();
-        assert_eq!(title.value(), Some("Title"));
+        assert_eq!(title.value(), Some("<strong>Title</strong>"));
         assert_eq!(title.attrs().get("type").map(String::as_str), Some("text"));
 
         assert!(map.contains_key("parent"));
