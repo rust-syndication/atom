@@ -8,6 +8,7 @@
 - Upgrade `quick_xml` to `0.27` and `derive_builder` to `0.12` [`#67`](https://github.com/rust-syndication/atom/pull/67)
 - Allow to configure emitted XML [`#70`](https://github.com/rust-syndication/atom/pull/70)
 - Switch to Rust 2021 Edition [`#74`](https://github.com/rust-syndication/atom/pull/74)
+- Remove unused error case `Error::Utf8` [`#73`](https://github.com/rust-syndication/atom/pull/73)
 
 ## 0.11.0 - 2021-10-20
 
