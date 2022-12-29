@@ -16,81 +16,50 @@ impl<'a, T: ToXml> ToXml for &'a T {
 }
 
 pub(crate) trait ToXmlNamed {
-    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), XmlError>
+    fn to_xml_named<W>(&self, writer: &mut Writer<W>, name: &str) -> Result<(), XmlError>
     where
-        W: Write,
-        N: AsRef<[u8]>;
+        W: Write;
 }
 
 impl<'a, T: ToXmlNamed> ToXmlNamed for &'a T {
-    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), XmlError>
+    fn to_xml_named<W>(&self, writer: &mut Writer<W>, name: &str) -> Result<(), XmlError>
     where
         W: Write,
-        N: AsRef<[u8]>,
     {
         (*self).to_xml_named(writer, name)
     }
 }
 
 pub(crate) trait WriterExt {
-    fn write_text_element<N, T>(&mut self, name: N, text: T) -> Result<(), XmlError>
-    where
-        N: AsRef<[u8]>,
-        T: AsRef<[u8]>;
-
-    fn write_text_elements<N, T, I>(&mut self, name: N, values: I) -> Result<(), XmlError>
-    where
-        N: AsRef<[u8]>,
-        T: AsRef<[u8]>,
-        I: IntoIterator<Item = T>;
+    fn write_text_element(&mut self, name: &str, text: &str) -> Result<(), XmlError>;
 
     fn write_object<T>(&mut self, object: T) -> Result<(), XmlError>
     where
         T: ToXml;
 
-    fn write_object_named<T, N>(&mut self, object: T, name: N) -> Result<(), XmlError>
+    fn write_object_named<T>(&mut self, object: T, name: &str) -> Result<(), XmlError>
     where
-        T: ToXmlNamed,
-        N: AsRef<[u8]>;
+        T: ToXmlNamed;
 
     fn write_objects<T, I>(&mut self, objects: I) -> Result<(), XmlError>
     where
         T: ToXml,
         I: IntoIterator<Item = T>;
 
-    fn write_objects_named<T, I, N>(&mut self, objects: I, name: N) -> Result<(), XmlError>
+    fn write_objects_named<T, I>(&mut self, objects: I, name: &str) -> Result<(), XmlError>
     where
         T: ToXmlNamed,
-        I: IntoIterator<Item = T>,
-        N: AsRef<[u8]>;
+        I: IntoIterator<Item = T>;
 }
 
 impl<W: Write> WriterExt for Writer<W> {
-    fn write_text_element<N, T>(&mut self, name: N, text: T) -> Result<(), XmlError>
-    where
-        N: AsRef<[u8]>,
-        T: AsRef<[u8]>,
-    {
-        let name = name.as_ref();
-        self.write_event(Event::Start(BytesStart::borrowed(name, name.len())))
+    fn write_text_element(&mut self, name: &str, text: &str) -> Result<(), XmlError> {
+        self.write_event(Event::Start(BytesStart::new(name)))
             .map_err(XmlError::new)?;
-        self.write_event(Event::Text(BytesText::from_escaped(text.as_ref())))
+        self.write_event(Event::Text(BytesText::new(text)))
             .map_err(XmlError::new)?;
-        self.write_event(Event::End(BytesEnd::borrowed(name)))
+        self.write_event(Event::End(BytesEnd::new(name)))
             .map_err(XmlError::new)?;
-        Ok(())
-    }
-
-    fn write_text_elements<N, T, I>(&mut self, name: N, values: I) -> Result<(), XmlError>
-    where
-        N: AsRef<[u8]>,
-        T: AsRef<[u8]>,
-        I: IntoIterator<Item = T>,
-    {
-        for value in values {
-            self.write_text_element(name.as_ref(), value)?;
-        }
-
         Ok(())
     }
 
@@ -101,10 +70,9 @@ impl<W: Write> WriterExt for Writer<W> {
         object.to_xml(self)
     }
 
-    fn write_object_named<T, N>(&mut self, object: T, name: N) -> Result<(), XmlError>
+    fn write_object_named<T>(&mut self, object: T, name: &str) -> Result<(), XmlError>
     where
         T: ToXmlNamed,
-        N: AsRef<[u8]>,
     {
         object.to_xml_named(self, name)
     }
@@ -121,14 +89,13 @@ impl<W: Write> WriterExt for Writer<W> {
         Ok(())
     }
 
-    fn write_objects_named<T, I, N>(&mut self, objects: I, name: N) -> Result<(), XmlError>
+    fn write_objects_named<T, I>(&mut self, objects: I, name: &str) -> Result<(), XmlError>
     where
         T: ToXmlNamed,
         I: IntoIterator<Item = T>,
-        N: AsRef<[u8]>,
     {
         for object in objects {
-            object.to_xml_named(self, name.as_ref())?;
+            object.to_xml_named(self, name)?;
         }
 
         Ok(())

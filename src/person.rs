@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::io::{BufRead, Write};
 
 use quick_xml::events::attributes::Attributes;
@@ -8,7 +9,7 @@ use quick_xml::Writer;
 use crate::error::{Error, XmlError};
 use crate::fromxml::FromXml;
 use crate::toxml::{ToXmlNamed, WriterExt};
-use crate::util::atom_text;
+use crate::util::{atom_text, decode, skip};
 
 /// Represents a person in an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
@@ -135,14 +136,12 @@ impl FromXml for Person {
         let mut buf = Vec::new();
 
         loop {
-            match reader.read_event(&mut buf).map_err(XmlError::new)? {
-                Event::Start(element) => match element.name() {
-                    b"name" => person.name = atom_text(reader)?.unwrap_or_default(),
-                    b"email" => person.email = atom_text(reader)?,
-                    b"uri" => person.uri = atom_text(reader)?,
-                    n => reader
-                        .read_to_end(n, &mut Vec::new())
-                        .map_err(XmlError::new)?,
+            match reader.read_event_into(&mut buf).map_err(XmlError::new)? {
+                Event::Start(element) => match decode(element.name().as_ref(), reader)? {
+                    Cow::Borrowed("name") => person.name = atom_text(reader)?.unwrap_or_default(),
+                    Cow::Borrowed("email") => person.email = atom_text(reader)?,
+                    Cow::Borrowed("uri") => person.uri = atom_text(reader)?,
+                    _ => skip(element.name(), reader)?,
                 },
                 Event::End(_) => break,
                 Event::Eof => return Err(Error::Eof),
@@ -157,27 +156,25 @@ impl FromXml for Person {
 }
 
 impl ToXmlNamed for Person {
-    fn to_xml_named<W, N>(&self, writer: &mut Writer<W>, name: N) -> Result<(), XmlError>
+    fn to_xml_named<W>(&self, writer: &mut Writer<W>, name: &str) -> Result<(), XmlError>
     where
         W: Write,
-        N: AsRef<[u8]>,
     {
-        let name = name.as_ref();
         writer
-            .write_event(Event::Start(BytesStart::borrowed(name, name.len())))
+            .write_event(Event::Start(BytesStart::new(name)))
             .map_err(XmlError::new)?;
-        writer.write_text_element(b"name", &*self.name)?;
+        writer.write_text_element("name", &self.name)?;
 
         if let Some(ref email) = self.email {
-            writer.write_text_element(b"email", &*email)?;
+            writer.write_text_element("email", email)?;
         }
 
         if let Some(ref uri) = self.uri {
-            writer.write_text_element(b"uri", &*uri)?;
+            writer.write_text_element("uri", uri)?;
         }
 
         writer
-            .write_event(Event::End(BytesEnd::borrowed(name)))
+            .write_event(Event::End(BytesEnd::new(name)))
             .map_err(XmlError::new)?;
 
         Ok(())

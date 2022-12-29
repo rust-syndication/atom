@@ -182,8 +182,7 @@ impl Extension {
 
 impl ToXml for Extension {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError> {
-        let name = self.name.as_bytes();
-        let mut element = BytesStart::borrowed(name, name.len());
+        let mut element = BytesStart::new(&self.name);
         element.extend_attributes(self.attrs.iter().map(|a| (a.0.as_bytes(), a.1.as_bytes())));
         writer
             .write_event(Event::Start(element))
@@ -191,7 +190,7 @@ impl ToXml for Extension {
 
         if let Some(value) = self.value.as_ref() {
             writer
-                .write_event(Event::Text(BytesText::from_escaped(value.as_bytes())))
+                .write_event(Event::Text(BytesText::new(value)))
                 .map_err(XmlError::new)?;
         }
 
@@ -200,7 +199,7 @@ impl ToXml for Extension {
         }
 
         writer
-            .write_event(Event::End(BytesEnd::borrowed(name)))
+            .write_event(Event::End(BytesEnd::new(&self.name)))
             .map_err(XmlError::new)?;
         Ok(())
     }
