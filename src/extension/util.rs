@@ -69,6 +69,7 @@ fn parse_extension_element<R: BufRead>(
         extension.attrs.insert(key.to_string(), value);
     }
 
+    let mut text = String::new();
     loop {
         match reader.read_event(&mut buf).map_err(XmlError::new)? {
             Event::Start(element) => {
@@ -87,15 +88,14 @@ fn parse_extension_element<R: BufRead>(
                 items.push(ext);
             }
             Event::CData(element) => {
-                extension.value = Some(reader.decode(&element).into());
+                text.push_str(reader.decode(&element).as_ref());
             }
             Event::Text(element) => {
-                extension.value = Some(
+                text.push_str(
                     element
                         .unescape_and_decode(reader)
                         .map_err(XmlError::new)?
-                        .trim()
-                        .to_string(),
+                        .as_ref(),
                 );
             }
             Event::End(element) => {
@@ -108,6 +108,9 @@ fn parse_extension_element<R: BufRead>(
 
         buf.clear();
     }
+    extension.value = Some(text.trim())
+        .filter(|t| !t.is_empty())
+        .map(ToString::to_string);
 
     Ok(extension)
 }
