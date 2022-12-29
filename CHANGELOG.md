@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.12.0 - Unreleased
+## 0.13.0 - Unreleased
+
+## 0.12.0 - 2022-12-29
 
 - Wrap `quick_xml::XmlError` into a newtype [`#65`](https://github.com/rust-syndication/atom/pull/65)
 - Implement `std::error::Error` for `XmlError`. Mark helper traits as `pub(crate)` to prevent their accidental leakage to public API [`#66`](https://github.com/rust-syndication/atom/pull/66)
