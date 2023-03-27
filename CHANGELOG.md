@@ -2,6 +2,10 @@
 
 ## 0.13.0 - Unreleased
 
+## 0.12.1 - 2023-03-27
+
+- Upgrade `quick_xml` to `0.28` [`#77`](https://github.com/rust-syndication/atom/pull/77)
+
 ## 0.12.0 - 2022-12-29
 
 - Wrap `quick_xml::XmlError` into a newtype [`#65`](https://github.com/rust-syndication/atom/pull/65)
