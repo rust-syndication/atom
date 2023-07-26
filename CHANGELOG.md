@@ -2,6 +2,8 @@
 
 ## 0.13.0 - Unreleased
 
+- Upgrade `quick_xml` to `0.30` [`#78`](https://github.com/rust-syndication/atom/pull/78)
+
 ## 0.12.1 - 2023-03-27
 
 - Upgrade `quick_xml` to `0.28` [`#77`](https://github.com/rust-syndication/atom/pull/77)
