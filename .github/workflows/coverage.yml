@@ -14,5 +14,5 @@ jobs:
       options: --security-opt seccomp=unconfined
     steps:
     - uses: actions/checkout@v3
-    - run: cargo tarpaulin -f -t 5 --out Xml -v -- --test-threads=1
+    - run: cargo tarpaulin -f -t 5 --out xml -v -- --test-threads=1
     - uses: codecov/codecov-action@v3
