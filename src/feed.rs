@@ -111,7 +111,7 @@ impl Feed {
     /// ```
     pub fn read_from<B: BufRead>(reader: B) -> Result<Feed, Error> {
         let mut reader = Reader::from_reader(reader);
-        reader.expand_empty_elements(true);
+        reader.config_mut().expand_empty_elements = true;
 
         let mut buf = Vec::new();
 

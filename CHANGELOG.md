@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Update `quick-xml` to `0.32`. [`#82`](https://github.com/rust-syndication/atom/pull/82)
+
 ## 0.12.3 - 2024-05-11
 
 - Bump MSRV (Minimum Supported Rust Version) from 1.56.0 to 1.57.0 [`#80`](https://github.com/rust-syndication/atom/pull/80)

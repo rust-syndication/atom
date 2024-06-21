@@ -279,7 +279,7 @@ mod test {
 
     fn from_xml(xml: &str) -> Result<Content, Error> {
         let mut reader = Reader::from_reader(xml.as_bytes());
-        reader.expand_empty_elements(true);
+        reader.config_mut().expand_empty_elements = true;
 
         loop {
             let mut buf = Vec::new();
