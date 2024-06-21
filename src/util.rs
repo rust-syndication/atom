@@ -51,7 +51,7 @@ fn non_empty(string: String) -> Option<String> {
 }
 
 pub fn atom_text<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, Error> {
-    reader.expand_empty_elements(false);
+    reader.config_mut().expand_empty_elements = false;
 
     let mut innerbuf = Vec::new();
     let mut depth = 0;
@@ -104,13 +104,13 @@ pub fn atom_text<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, E
         innerbuf.clear();
     }
 
-    reader.expand_empty_elements(true);
+    reader.config_mut().expand_empty_elements = true;
 
     Ok(non_empty(result))
 }
 
 pub fn atom_xhtml<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, Error> {
-    reader.expand_empty_elements(false);
+    reader.config_mut().expand_empty_elements = false;
 
     let mut innerbuf = Vec::new();
     let mut depth = 0;
@@ -163,7 +163,7 @@ pub fn atom_xhtml<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, 
         innerbuf.clear();
     }
 
-    reader.expand_empty_elements(true);
+    reader.config_mut().expand_empty_elements = true;
 
     Ok(non_empty(result))
 }
@@ -186,7 +186,7 @@ mod test {
 
     fn read_x(xml: &str) -> Result<Option<String>, Error> {
         let mut reader = Reader::from_reader(xml.as_bytes());
-        reader.expand_empty_elements(true);
+        reader.config_mut().expand_empty_elements = true;
         loop {
             let mut buf = Vec::new();
             match reader.read_event_into(&mut buf).map_err(XmlError::new)? {
