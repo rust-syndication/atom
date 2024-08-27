@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Update `quick-xml` to `0.32`. [`#82`](https://github.com/rust-syndication/atom/pull/82)
+- Update `quick-xml` to `0.36`. [`#83`](https://github.com/rust-syndication/atom/pull/83)
 
 ## 0.12.3 - 2024-05-11
 

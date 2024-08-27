@@ -30,7 +30,7 @@ pub(crate) fn attr_value<'s, 'r, B: BufRead>(
     reader: &'r Reader<B>,
 ) -> Result<Cow<'s, str>, Error> {
     let value = attr
-        .decode_and_unescape_value(reader)
+        .decode_and_unescape_value(reader.decoder())
         .map_err(XmlError::new)?;
     Ok(value)
 }
