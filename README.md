@@ -52,8 +52,6 @@ let feed = string.parse::<Feed>().unwrap();
 
 A feed can be written to any object that implements the `Write` trait or converted to an XML string using the `ToString` trait.
 
-**Note**: Writing a feed does not perform any escaping of XML entities.
-
 ### Example
 
 ```rust
