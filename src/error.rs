@@ -64,11 +64,11 @@ impl From<XmlError> for Error {
 }
 
 #[derive(Debug)]
-pub struct XmlError(quick_xml::Error);
+pub struct XmlError(Box<dyn StdError>);
 
 impl XmlError {
-    pub(crate) fn new(err: quick_xml::Error) -> Self {
-        Self(err)
+    pub(crate) fn new(err: impl StdError + 'static) -> Self {
+        Self(Box::new(err))
     }
 }
 
