@@ -12,6 +12,17 @@ use crate::toxml::ToXml;
 use crate::util::{atom_text, atom_xhtml, attr_value, decode};
 
 /// Represents the content of an Atom entry
+//
+/// ## Attention
+///
+/// Atom format specification [RFC4287](https://datatracker.ietf.org/doc/html/rfc4287#section-4.1.3.2)
+/// states that `src` and `value` (content) fields are mutually exclusive:
+///
+/// > atom:content MAY have a "src" attribute, whose value MUST be an IRI reference.
+/// > If the "src" attribute is present, atom:content MUST be empty.
+///
+/// Setting of both fields when authoring an Atom feed is still technically possible,
+/// but it will lead to a non-compliant result.
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Default, Clone, PartialEq)]
 #[cfg_attr(feature = "builders", derive(Builder))]
