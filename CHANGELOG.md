@@ -4,6 +4,7 @@
 
 - Remove ambiguous statements about escaping from documentation. [`#85`](https://github.com/rust-syndication/atom/pull/85)
 - Update `quick-xml` to `0.37`. [`#86`](https://github.com/rust-syndication/atom/pull/86)
+- Clarify usage of `src` attribute of a `Content` structure. [`#87`](https://github.com/rust-syndication/atom/pull/87)
 
 ## 0.12.4 - 2024-08-28
 
