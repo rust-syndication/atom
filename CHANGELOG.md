@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix a regression: make `Error` and `XmlError` be `Send` and `Sync` again [`#89`](https://github.com/rust-syndication/atom/pull/89)
+
 ## 0.12.5 - 2024-11-16
 
 - Remove ambiguous statements about escaping from documentation. [`#85`](https://github.com/rust-syndication/atom/pull/85)

@@ -64,10 +64,10 @@ impl From<XmlError> for Error {
 }
 
 #[derive(Debug)]
-pub struct XmlError(Box<dyn StdError>);
+pub struct XmlError(Box<dyn StdError + Send + Sync>);
 
 impl XmlError {
-    pub(crate) fn new(err: impl StdError + 'static) -> Self {
+    pub(crate) fn new(err: impl StdError + Send + Sync + 'static) -> Self {
         Self(Box::new(err))
     }
 }
@@ -81,5 +81,17 @@ impl StdError for XmlError {
 impl fmt::Display for XmlError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self.0, f)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn error_send_and_sync() {
+        fn assert_send_sync<T: Send + Sync>() {}
+        assert_send_sync::<Error>();
+        assert_send_sync::<XmlError>();
     }
 }
