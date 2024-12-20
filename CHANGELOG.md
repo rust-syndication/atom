@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.12.6 - 2024-12-20
+
 - Fix a regression: make `Error` and `XmlError` be `Send` and `Sync` again [`#89`](https://github.com/rust-syndication/atom/pull/89)
 
 ## 0.12.5 - 2024-11-16
