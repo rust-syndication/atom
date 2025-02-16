@@ -10,7 +10,6 @@ license = "MIT/Apache-2.0"
 readme = "README.md"
 keywords = ["atom", "feed", "parser", "parsing"]
 categories = ["parser-implementations"]
-include = ["src/*", "Cargo.toml", "LICENSE-MIT", "LICENSE-APACHE", "README.md"]
 
 [dependencies]
 diligent-date-parser = "0.1.3"
