@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.12.7 - 2025-02-16
+
 - Publish tests [`#90`](https://github.com/rust-syndication/atom/pull/90)
 
 ## 0.12.6 - 2024-12-20
