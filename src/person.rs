@@ -7,6 +7,8 @@ use quick_xml::Reader;
 use quick_xml::Writer;
 
 use crate::error::{Error, XmlError};
+use crate::extension::util::{extension_name, parse_extension};
+use crate::extension::ExtensionMap;
 use crate::fromxml::FromXml;
 use crate::toxml::{ToXmlNamed, WriterExt};
 use crate::util::{atom_text, decode, skip};
@@ -30,6 +32,8 @@ pub struct Person {
     pub email: Option<String>,
     /// A Web page for the person.
     pub uri: Option<String>,
+    /// A list of extensions for the person.
+    pub extensions: ExtensionMap,
 }
 
 impl Person {
@@ -128,6 +132,35 @@ impl Person {
     {
         self.uri = uri.into()
     }
+
+    /// Return the extensions for this person.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use atom_syndication::{Person, extension::ExtensionMap};
+    ///
+    /// let mut person = Person::default();
+    /// person.set_extensions(ExtensionMap::new());
+    /// assert_eq!(person.extensions().len(), 0);
+    /// ```
+    pub fn extensions(&self) -> &ExtensionMap {
+        &self.extensions
+    }
+
+    /// Set the extensions for this person.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use atom_syndication::{Person, extension::ExtensionMap};
+    ///
+    /// let mut person = Person::default();
+    /// person.set_extensions(ExtensionMap::new());
+    /// ```
+    pub fn set_extensions(&mut self, extensions: ExtensionMap) {
+        self.extensions = extensions;
+    }
 }
 
 impl FromXml for Person {
@@ -141,7 +174,19 @@ impl FromXml for Person {
                     Cow::Borrowed("name") => person.name = atom_text(reader)?.unwrap_or_default(),
                     Cow::Borrowed("email") => person.email = atom_text(reader)?,
                     Cow::Borrowed("uri") => person.uri = atom_text(reader)?,
-                    _ => skip(element.name(), reader)?,
+                    n => {
+                        if let Some((ns, name)) = extension_name(n.as_ref()) {
+                            parse_extension(
+                                reader,
+                                element.attributes(),
+                                ns,
+                                name,
+                                &mut person.extensions,
+                            )?;
+                        } else {
+                            skip(element.name(), reader)?;
+                        }
+                    }
                 },
                 Event::End(_) => break,
                 Event::Eof => return Err(Error::Eof),
@@ -171,6 +216,12 @@ impl ToXmlNamed for Person {
 
         if let Some(ref uri) = self.uri {
             writer.write_text_element("uri", uri)?;
+        }
+
+        for map in self.extensions.values() {
+            for extensions in map.values() {
+                writer.write_objects(extensions)?;
+            }
         }
 
         writer
