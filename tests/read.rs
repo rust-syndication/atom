@@ -118,6 +118,17 @@ fn read_person() {
     assert_eq!(person.name(), "John Doe");
     assert_eq!(person.email(), Some("johndoe@example.com"));
     assert_eq!(person.uri(), Some("http://example.com"));
+
+    // Person extensions
+    assert!(person.extensions().contains_key("ext"));
+    let map = person.extensions().get("ext").unwrap();
+    assert!(map.contains_key("name"));
+    let name = map.get("name").unwrap().first().unwrap();
+    assert_eq!(name.value(), Some("Example Name"));
+    assert_eq!(
+        name.attrs().get("exattr").map(String::as_str),
+        Some("exvalue")
+    );
 }
 
 #[test]

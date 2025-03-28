@@ -3,5 +3,6 @@
 		<name>John Doe</name>
 		<email>johndoe@example.com</email>
 		<uri>http://example.com</uri>
+		<ext:name exattr="exvalue" xmlns:ext="http://www.example.com">Example Name</ext:name>
 	</author>
 </feed>
