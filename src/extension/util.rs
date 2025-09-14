@@ -1,9 +1,11 @@
 use std::collections::BTreeMap;
 use std::io::BufRead;
 
-use quick_xml::events::attributes::Attributes;
-use quick_xml::events::Event;
-use quick_xml::Reader;
+use quick_xml::{
+    escape::resolve_predefined_entity,
+    events::{attributes::Attributes, Event},
+    Reader,
+};
 
 use crate::error::{Error, XmlError};
 use crate::extension::{Extension, ExtensionMap};
@@ -87,7 +89,19 @@ fn parse_extension_element<R: BufRead>(
                 text.push_str(decode(&element, reader)?.as_ref());
             }
             Event::Text(element) => {
-                text.push_str(element.unescape().map_err(XmlError::new)?.as_ref());
+                text.push_str(element.decode().map_err(XmlError::new)?.as_ref());
+            }
+            Event::GeneralRef(gref) => {
+                let entity = gref.decode().map_err(XmlError::new)?;
+                if let Some(resolved_entity) = resolve_predefined_entity(&entity) {
+                    text.push_str(resolved_entity);
+                } else if let Some(ch) = gref.resolve_char_ref().map_err(XmlError::new)? {
+                    text.push(ch);
+                } else {
+                    text.push('&');
+                    text.push_str(&entity);
+                    text.push(';');
+                }
             }
             Event::End(element) => {
                 extension.name = decode(element.name().as_ref(), reader)?.into();

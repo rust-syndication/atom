@@ -1,5 +1,5 @@
 use quick_xml::{
-    escape::escape,
+    escape::{escape, resolve_predefined_entity},
     events::{attributes::Attribute, Event},
     name::QName,
     Reader,
@@ -86,11 +86,23 @@ pub fn atom_text<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, E
                 result.push_str(decode(&text, reader)?.as_ref());
             }
             Event::Text(text) => {
-                let decoded = text.unescape().map_err(XmlError::new)?;
+                let decoded = text.decode().map_err(XmlError::new)?;
                 result.push_str(&decoded);
             }
+            Event::GeneralRef(gref) => {
+                let entity = gref.decode().map_err(XmlError::new)?;
+                if let Some(resolved_entity) = resolve_predefined_entity(&entity) {
+                    result.push_str(resolved_entity);
+                } else if let Some(ch) = gref.resolve_char_ref().map_err(XmlError::new)? {
+                    result.push(ch);
+                } else {
+                    result.push('&');
+                    result.push_str(&entity);
+                    result.push(';');
+                }
+            }
             Event::Comment(text) => {
-                let decoded = text.unescape().map_err(XmlError::new)?;
+                let decoded = text.decode().map_err(XmlError::new)?;
                 result.push_str("<!--");
                 result.push_str(&decoded);
                 result.push_str("-->");
@@ -145,11 +157,17 @@ pub fn atom_xhtml<B: BufRead>(reader: &mut Reader<B>) -> Result<Option<String>, 
                 result.push_str(escape(decode(&text, reader)?.as_ref()).as_ref());
             }
             Event::Text(text) => {
-                let decoded = text.unescape().map_err(XmlError::new)?;
+                let decoded = text.decode().map_err(XmlError::new)?;
                 result.push_str(escape(decoded.as_ref()).as_ref());
             }
+            Event::GeneralRef(gref) => {
+                let entity = gref.decode().map_err(XmlError::new)?;
+                result.push('&');
+                result.push_str(&entity);
+                result.push(';');
+            }
             Event::Comment(text) => {
-                let decoded = text.unescape().map_err(XmlError::new)?;
+                let decoded = text.decode().map_err(XmlError::new)?;
                 result.push_str("<!--");
                 result.push_str(&decoded);
                 result.push_str("-->");
