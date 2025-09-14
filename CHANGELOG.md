@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Enables the parsing of elements defined in another namespace in Person constructs [`#91`](https://github.com/rust-syndication/atom/pull/91)
+- Update `quick-xml` to `0.38` [`#92`](https://github.com/rust-syndication/atom/pull/92)
 
 ## 0.12.7 - 2025-02-16
 
