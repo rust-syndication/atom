@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Enables the parsing of elements defined in another namespace in Person constructs [`#91`](https://github.com/rust-syndication/atom/pull/91)
+
 ## 0.12.7 - 2025-02-16
 
 - Publish tests [`#90`](https://github.com/rust-syndication/atom/pull/90)
