@@ -31,7 +31,7 @@ use crate::util::{atom_text, atom_xhtml, attr_value, decode};
     builder(
         setter(into),
         default,
-        build_fn(name = "build_impl", private, error = "never::Never")
+        build_fn(name = "build_impl", private, error = "std::convert::Infallible")
     )
 )]
 pub struct Content {
