@@ -6,6 +6,7 @@
 - Update `quick-xml` to `0.38` [`#92`](https://github.com/rust-syndication/atom/pull/92)
 - Bump MSRV (Minimum Supported Rust Version) from 1.57.0 to 1.83.0
 - Replace `Never` type from the `never` crate with `Infallible` from std [`#93`](https://github.com/rust-syndication/atom/pull/93)
+- Update `quick-xml` to `0.39` [`#94`](https://github.com/rust-syndication/atom/pull/94)
 
 ## 0.12.7 - 2025-02-16
 
