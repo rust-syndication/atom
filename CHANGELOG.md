@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.12.8 - 2026-05-10
+
 - Enables the parsing of elements defined in another namespace in Person constructs [`#91`](https://github.com/rust-syndication/atom/pull/91)
 - Update `quick-xml` to `0.38` [`#92`](https://github.com/rust-syndication/atom/pull/92)
 - Bump MSRV (Minimum Supported Rust Version) from 1.57.0 to 1.83.0
