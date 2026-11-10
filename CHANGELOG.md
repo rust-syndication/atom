@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bump MSRV from 1.83.0 to 1.88.0 for `encoding_rs`. [#99](https://github.com/rust-syndication/atom/pull/99)
+
 ## 0.12.10 - 2026-07-30
 
 - Add standalone entry I/O: `Entry::read_from`, `Entry::write_to`, `Entry::write_with_config`, and `FromStr`/`ToString` impls, mirroring the existing `Feed` API. Standalone serialization declares the Atom namespace on the `<entry>` root; entries embedded in a `<feed>` do not.

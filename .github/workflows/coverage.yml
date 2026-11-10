@@ -13,6 +13,6 @@ jobs:
       image: xd009642/tarpaulin:latest
       options: --security-opt seccomp=unconfined
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - run: cargo tarpaulin -f -t 5 --out Xml -v -- --test-threads=1
-    - uses: codecov/codecov-action@v3
+    - uses: codecov/codecov-action@v7
