@@ -10,7 +10,7 @@ Library for serializing the Atom web content syndication format.
 
 [Documentation](https://docs.rs/atom_syndication/)
 
-This crate requires *Rustc version 1.83.0 or greater*.
+This crate requires *Rustc version 1.88.0 or greater*.
 
 ## Usage
 
