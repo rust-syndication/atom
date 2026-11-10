@@ -376,3 +376,32 @@ fn read_standalone_entry_eof_without_root() {
     let result = Entry::read_from("<?xml version=\"1.0\"?>".as_bytes());
     assert!(matches!(result, Err(Error::Eof)));
 }
+
+#[test]
+fn read_feed_iso_8859_1() {
+    let mut xml = b"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\
+        <feed xmlns=\"http://www.w3.org/2005/Atom\"><title>Caf"
+        .to_vec();
+    xml.push(0xE9);
+    xml.extend_from_slice(
+        b"</title><id>urn:id</id><updated>2017-06-03T15:15:44-05:00</updated></feed>",
+    );
+    let feed = Feed::read_from(&xml[..]).unwrap();
+
+    assert_eq!(feed.title(), "Café");
+}
+
+#[test]
+fn read_feed_iso_8859_1_long_declaration() {
+    // The declaration is longer than 64 bytes.
+    let mut xml = b"<?xml version=\"1.0\"                          encoding=\"ISO-8859-1\"?>\
+        <feed xmlns=\"http://www.w3.org/2005/Atom\"><title>Caf"
+        .to_vec();
+    xml.push(0xE9);
+    xml.extend_from_slice(
+        b"</title><id>urn:id</id><updated>2017-06-03T15:15:44-05:00</updated></feed>",
+    );
+    let feed = Feed::read_from(&xml[..]).unwrap();
+
+    assert_eq!(feed.title(), "Café");
+}
