@@ -3,7 +3,7 @@ extern crate atom_syndication as atom;
 use std::fs::File;
 use std::io::BufReader;
 
-use crate::atom::{Content, Entry, Feed};
+use crate::atom::{Category, Content, Entry, Feed, Text};
 
 macro_rules! feed {
     ($f:expr) => {{
@@ -101,4 +101,30 @@ fn write_content_roundtrip() {
     feed.set_entries(vec![entry]);
 
     assert_eq!(feed.to_string().parse::<Feed>().unwrap(), feed);
+}
+
+#[test]
+fn write_replaces_control_characters() {
+    let mut category = Category::default();
+    category.set_term("ta\u{8}g");
+
+    let mut entry = Entry::default();
+    entry.set_title("Ti\u{1e}tle\tand\nmore");
+    entry.set_summary(Text::html("<scr\u{1}ipt>"));
+    entry.set_categories(vec![category]);
+
+    let mut feed = Feed::default();
+    feed.set_entries(vec![entry]);
+
+    let out = feed.to_string();
+    // The parser is lenient, so check the raw output too.
+    assert!(!out
+        .bytes()
+        .any(|b| b < 0x20 && !matches!(b, b'\t' | b'\n' | b'\r')));
+
+    let parsed = out.parse::<Feed>().unwrap();
+    let entry = &parsed.entries()[0];
+    assert_eq!(entry.title().as_str(), "Ti\u{FFFD}tle\tand\nmore");
+    assert_eq!(entry.summary().unwrap().as_str(), "<scr\u{FFFD}ipt>");
+    assert_eq!(entry.categories()[0].term(), "ta\u{FFFD}g");
 }

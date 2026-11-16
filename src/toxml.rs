@@ -1,9 +1,31 @@
-use std::io::Write;
+use std::io::{self, Write};
 
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::Writer;
 
 use crate::error::XmlError;
+
+/// Replaces the C0 control characters XML 1.0 forbids with U+FFFD. Dropping them
+/// could join their neighbors into a new token.
+pub(crate) struct XmlSafeWriter<W>(pub(crate) W);
+
+impl<W: Write> Write for XmlSafeWriter<W> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        let mut runs = buf.split(|b| matches!(b, 0x00..=0x08 | 0x0B | 0x0C | 0x0E..=0x1F));
+        if let Some(first) = runs.next() {
+            self.0.write_all(first)?;
+        }
+        for run in runs {
+            self.0.write_all("\u{FFFD}".as_bytes())?;
+            self.0.write_all(run)?;
+        }
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.0.flush()
+    }
+}
 
 pub(crate) trait ToXml {
     fn to_xml<W: Write>(&self, writer: &mut Writer<W>) -> Result<(), XmlError>;

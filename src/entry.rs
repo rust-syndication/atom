@@ -19,7 +19,7 @@ use crate::link::Link;
 use crate::person::Person;
 use crate::source::Source;
 use crate::text::Text;
-use crate::toxml::{ToXml, WriterExt};
+use crate::toxml::{ToXml, WriterExt, XmlSafeWriter};
 use crate::util::{
     atom_datetime, atom_text, attr_value, decode, default_fixed_datetime, skip, FixedDateTime,
 };
@@ -653,8 +653,8 @@ impl Entry {
         write_config: WriteConfig,
     ) -> Result<W, Error> {
         let mut writer = match write_config.indent_size {
-            Some(indent_size) => Writer::new_with_indent(writer, b' ', indent_size),
-            None => Writer::new(writer),
+            Some(indent_size) => Writer::new_with_indent(XmlSafeWriter(writer), b' ', indent_size),
+            None => Writer::new(XmlSafeWriter(writer)),
         };
         if write_config.write_document_declaration {
             writer
@@ -665,7 +665,7 @@ impl Entry {
                 .map_err(XmlError::new)?;
         }
         self.to_xml_inner(&mut writer, true)?;
-        Ok(writer.into_inner())
+        Ok(writer.into_inner().0)
     }
 
     /// Serializes the `<entry>` element. `declare_xmlns` controls whether the
