@@ -4,6 +4,7 @@
 
 - Bump MSRV from 1.83.0 to 1.88.0 for `encoding_rs`. [#99](https://github.com/rust-syndication/atom/pull/99)
 - Replace C0 control characters, which XML 1.0 forbids, with U+FFFD when writing a feed or entry instead of producing a document that conforming parsers reject. [`#101`](https://github.com/rust-syndication/atom/pull/101)
+- Add `ReadConfig` and `Feed::read_with_config`. Setting `ReadConfig::skip_invalid_entries` leaves out entries with an invalid value, such as an unparseable date, instead of failing the whole feed. [`#102`](https://github.com/rust-syndication/atom/pull/102)
 
 ## 0.12.10 - 2026-07-30
 

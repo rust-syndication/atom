@@ -6,7 +6,7 @@ use std::io::BufReader;
 use atom::Error;
 
 use crate::atom::extension::ExtensionMap;
-use crate::atom::{Entry, Feed, Text};
+use crate::atom::{Entry, Feed, ReadConfig, Text};
 
 macro_rules! feed {
     ($f:expr) => {{
@@ -405,4 +405,23 @@ fn read_feed_iso_8859_1_long_declaration() {
     let feed = Feed::read_from(&xml[..]).unwrap();
 
     assert_eq!(feed.title(), "Café");
+}
+
+#[test]
+fn read_feed_skip_invalid_entries() {
+    let xml = r#"<feed xmlns="http://www.w3.org/2005/Atom">
+        <entry><id>1</id><updated>Tuesday, January 2nd</updated></entry>
+        <entry><id>2</id><title type="bogus">T</title></entry>
+        <entry><id>3</id><source><updated>never</updated></source></entry>
+        <entry><id>4</id><updated>2024-01-02T00:00:00Z</updated></entry>
+    </feed>"#;
+
+    let result = Feed::read_from(xml.as_bytes());
+    assert!(matches!(result, Err(Error::WrongDatetime(_))));
+
+    let mut config = ReadConfig::default();
+    config.skip_invalid_entries = true;
+    let feed = Feed::read_with_config(xml.as_bytes(), config).unwrap();
+    let ids: Vec<&str> = feed.entries().iter().map(Entry::id).collect();
+    assert_eq!(ids, ["4"]);
 }
