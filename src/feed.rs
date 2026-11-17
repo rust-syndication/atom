@@ -40,6 +40,15 @@ impl Default for WriteConfig {
     }
 }
 
+/// Various options which control XML reader
+#[derive(Debug, Clone, Default)]
+#[non_exhaustive]
+pub struct ReadConfig {
+    /// Leave out an entry with an invalid value, such as an unparseable date, instead of
+    /// failing the whole feed. Malformed XML is still an error. Default is `false`.
+    pub skip_invalid_entries: bool,
+}
+
 /// Represents an Atom feed
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Clone, PartialEq)]
@@ -110,6 +119,28 @@ impl Feed {
     /// let feed = Feed::read_from(BufReader::new(file)).unwrap();
     /// ```
     pub fn read_from<B: BufRead>(reader: B) -> Result<Feed, Error> {
+        Feed::read_with_config(reader, ReadConfig::default())
+    }
+
+    /// Attempt to read an Atom feed from the reader using the given [`ReadConfig`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use atom_syndication::{Feed, ReadConfig};
+    ///
+    /// let xml = r#"<feed xmlns="http://www.w3.org/2005/Atom">
+    ///   <entry><id>good</id><updated>2024-01-02T00:00:00Z</updated></entry>
+    ///   <entry><id>bad</id><updated>Tuesday, January 2nd</updated></entry>
+    /// </feed>"#;
+    ///
+    /// let mut config = ReadConfig::default();
+    /// config.skip_invalid_entries = true;
+    /// let feed = Feed::read_with_config(xml.as_bytes(), config).unwrap();
+    /// assert_eq!(feed.entries.len(), 1);
+    /// assert_eq!(feed.entries[0].id, "good");
+    /// ```
+    pub fn read_with_config<B: BufRead>(reader: B, read_config: ReadConfig) -> Result<Feed, Error> {
         let mut reader = Reader::from_reader(reader);
         reader.config_mut().expand_empty_elements = true;
 
@@ -119,7 +150,7 @@ impl Feed {
             match reader.read_event_into(&mut buf).map_err(XmlError::new)? {
                 Event::Start(element) => {
                     if decode(element.name().as_ref(), &reader)? == "feed" {
-                        return Feed::from_xml(&mut reader, element.attributes());
+                        return Feed::from_xml(&mut reader, element.attributes(), read_config);
                     } else {
                         return Err(Error::InvalidStartTag);
                     }
@@ -740,10 +771,11 @@ impl Feed {
     }
 }
 
-impl FromXml for Feed {
+impl Feed {
     fn from_xml<B: BufRead>(
         reader: &mut Reader<B>,
         mut atts: Attributes<'_>,
+        read_config: ReadConfig,
     ) -> Result<Self, Error> {
         let mut feed = Feed::default();
         let mut buf = Vec::new();
@@ -801,9 +833,19 @@ impl FromXml for Feed {
                     Cow::Borrowed("subtitle") => {
                         feed.subtitle = Some(Text::from_xml(reader, element.attributes())?)
                     }
-                    Cow::Borrowed("entry") => feed
-                        .entries
-                        .push(Entry::from_xml(reader, element.attributes())?),
+                    Cow::Borrowed("entry") => match Entry::from_xml(reader, element.attributes()) {
+                        Ok(entry) => feed.entries.push(entry),
+                        Err(err) => {
+                            let invalid_value = matches!(
+                                err,
+                                Error::WrongDatetime(_) | Error::WrongAttribute { .. }
+                            );
+                            if !(read_config.skip_invalid_entries && invalid_value) {
+                                return Err(err);
+                            }
+                            skip(element.name(), reader)?
+                        }
+                    },
                     n => {
                         if let Some((ns, name)) = extension_name(n.as_ref()) {
                             parse_extension(
